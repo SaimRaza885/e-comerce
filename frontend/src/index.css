@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+@theme {
+  --color-primary: #7B3F00;   /* Brown */
+  --color-secondary: #D2691E; /* Orange */
+  --color-accent: #FFD700;    /* Golden */
+  --color-bg: #FFF8F0;        /* Cream */
+  --color-text: #2C2C2C;      /* Dark charcoal */
+}
+
+/* 🔘 Buttons */
+.btn {
+  @apply inline-block px-5 py-2.5 rounded-xl font-semibold transition duration-200 text-center;
+}
+
+.btn-primary {
+  @apply bg-primary text-white hover:bg-secondary hover:scale-105;
+}
+
+.btn-accent {
+  @apply bg-accent text-primary hover:bg-secondary hover:text-white hover:scale-105;
+}
+
+/* 🔍 Search Box */
+.input {
+  @apply w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent focus:outline-none;
+}
+
+
+.sec_heading {
+@apply text-3xl md:text-4xl font-bold text-gray-800
+}
