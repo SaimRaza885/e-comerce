@@ -1,34 +1,37 @@
+// middlewares/verifyJWT.js
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/Api_Error.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { Admin } from "../model/admin.model.js";
+import { User } from "../model/user.model.js";
 
- const verifyAdminJWT = asyncHandler(async (req, _, next) => {
- try {
-     const token =
-       req.cookies?.accessToken ||
-       req.header("Authorization")?.replace("Bearer ", "");
-   
-     if (!token) {
-       throw new ApiError(400, "UnAuthorized Request ??");
-     }
-   
-     const decodedTokenInfo = jwt.verify(
-       token,
-       process.env.JWT_ACCESS_TOKEN_SECRET
-     );
-   
-     const admin = await Admin.findById(decodedTokenInfo._id)
-   
-     if (!admin) {
-       throw new ApiError(401, "admin Not  Exist");
-     }
-   
-     req.admin = admin;
-     next();
- } catch (error) {
-    throw new ApiError(401,"Invalid Access Token",error?.message)
- }
-});
+const verifyJWT = (requiredRole = null) =>
+  asyncHandler(async (req, _, next) => {
+    const token =
+      req.cookies?.accessToken ||
+      req.header("Authorization")?.replace("Bearer ", "");
 
-export default verifyAdminJWT
+    if (!token) {
+      throw new ApiError(401, "Unauthorized: No token provided");
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_ACCESS_TOKEN_SECRET
+    );
+
+    const user = await User.findById(decoded._id);
+
+    if (!user) {
+      throw new ApiError(401, "User not found");
+    }
+
+    // If a role is required, check it
+    if (requiredRole && user.role !== requiredRole) {
+      throw new ApiError(403, `Access denied for role: ${user.role}`);
+    }
+
+    req.user = user; // Save user in request
+    next();
+  });
+
+export default verifyJWT;

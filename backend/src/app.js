@@ -17,11 +17,11 @@ app.use(express.json());
 
 // Routes import
 
-import adminRoutes from "./route/admin.route.js";
+import userRoutes from "./route/user.route.js";
 import productRoutes from "./route/product.route.js";
 // Routes
 
-app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/product", productRoutes);
 
 export default app;

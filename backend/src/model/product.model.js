@@ -14,12 +14,11 @@ const productSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      default: "",
+      required: true,
     },
     price: {
       type: Number,
       required: true,
-      min: 0,
     },
     images: [
       {
@@ -31,8 +30,15 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    stock: {
+      type: Number,
+      required: true,
+      default: 0,
+    }
+
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Product", productSchema);
+export const Product = mongoose.model("Product", productSchema);
+

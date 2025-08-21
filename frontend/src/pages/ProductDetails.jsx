@@ -14,7 +14,7 @@ const ProductDetails = () => {
 
   return (
     <>
-    <Small_Banner title={id} subtitle={"Fresh, organic dry fruits directly from Gilgit Baltistan"} bgImage={Images.image_1}  />
+    <Small_Banner title={id.replace("-"," ").toLocaleUpperCase()} subtitle={"Fresh, organic dry fruits directly from Gilgit Baltistan"} bgImage={Images.image_1}  />
     <div className="container mx-auto px-4 py-16">
       <div className="grid md:grid-cols-2 gap-10">
         {/* Image placeholder */}

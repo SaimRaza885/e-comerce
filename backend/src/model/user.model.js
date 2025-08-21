@@ -2,13 +2,17 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const adminSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
       required: true,
       trim: true,
-      unique: true, // Prevent duplicate admin names
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
     },
     password: {
       type: String,
@@ -16,29 +20,34 @@ const adminSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["admin"],
-      default: "admin",
+      enum: ["user", "admin"],
+      default: "user", // regular users by default
     },
     refreshToken: {
       type: String,
     },
+    avatar: {
+      url: { type: String, required: true },
+      public_id: { type: String, required: true },
+    }
   },
   { timestamps: true }
 );
 
 // 🔐 Hash password before saving
-adminSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
 // ✅ Check password
-adminSchema.methods.isPasswordCorrect = async function (password) {
+userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-adminSchema.methods.generateAccessToken = function () {
+// ✅ Access Token
+userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     { _id: this._id, role: this.role },
     process.env.JWT_ACCESS_TOKEN_SECRET,
@@ -46,8 +55,8 @@ adminSchema.methods.generateAccessToken = function () {
   );
 };
 
-// ✅ Refresh token
-adminSchema.methods.generateRefreshToken = function () {
+// ✅ Refresh Token
+userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     { _id: this._id, role: this.role },
     process.env.JWT_REFRESH_TOKEN_SECRET,
@@ -55,4 +64,4 @@ adminSchema.methods.generateRefreshToken = function () {
   );
 };
 
-export const Admin = mongoose.model("Admin", adminSchema);
+export const User = mongoose.model("User", userSchema);
