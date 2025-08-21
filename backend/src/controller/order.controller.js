@@ -1,5 +1,5 @@
-import Order from "../models/order.model.js";
-import Product from "../models/product.model.js";
+import { Order } from "../model/order.model.js"
+import { Product } from "../model/product.model.js";
 import { ApiError } from "../utils/Api_Error.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -21,7 +21,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   }
 
   const order = await Order.create({
-    user: req.user?._id || null, // if user is logged in
+    user: req.user?._id , // if user is logged in
     phone,
     country,
     city,
@@ -82,20 +82,14 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 });
 
 // 🔴 Cancel order (user)
-export const cancelOrder = asyncHandler(async (req, res) => {
+export const Delete_Order = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const order = await Order.findOne({ _id: id, user: req.user._id });
+  const order = await Order.findOneAndDelete({ _id: id, user: req.user._id });
   if (!order) throw new ApiError(404, "Order not found");
-
-  if (order.status !== "pending") {
-    throw new ApiError(400, "Only pending orders can be canceled");
-  }
-
-  order.status = "canceled";
-  await order.save();
 
   return res
     .status(200)
-    .json(new ApiResponse(200, order, "Order canceled successfully"));
+    .json(new ApiResponse(200, null, "Order deleted successfully"));
 });
+

@@ -4,22 +4,29 @@ import {
     getUserOrders,
     getAllOrders,
     updateOrderStatus,
-    cancelOrder,
+    Delete_Order, // renamed for consistency
 } from "../controller/order.controller.js";
-import verifyJWT from "../middleware/verifyAdmin.middleware.js";
-import app from "../app.js";
+import verifyJWT from "../middleware/verifyAdmin.middleware.js"; // assuming it handles role checking
 
 const router = express.Router();
 
-app.use(verifyJWT)
+// ------------------- User Routes -------------------
 
-// User routes
-router.post("/create", createOrder);
-router.get("/my-orders", getUserOrders);
-router.put("/cancel/:id", cancelOrder);
+// Create a new order
+router.post("/create", verifyJWT("user"), createOrder);
 
-// Admin routes
-router.get("/all", getAllOrders);
-router.put("/status/:id", updateOrderStatus);
+// Get orders of logged-in user
+router.get("/my-orders", verifyJWT("user"), getUserOrders);
+
+// Delete/cancel an order (only by owner)
+router.delete("/delete/:id", verifyJWT("user"), Delete_Order);
+
+// ------------------- Admin Routes -------------------
+
+// Get all orders (admin)
+router.get("/all", verifyJWT("admin"), getAllOrders);
+
+// Update order status (admin)
+router.put("/status/:id", verifyJWT("admin"), updateOrderStatus);
 
 export default router;

@@ -3,7 +3,7 @@ import { ApiError } from "../utils/Api_Error.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../model/user.model.js";
-import { deleteOnCloudinary } from "../utils/upload_On_Cloudinary.js";
+import { Cloudinary_File_Upload, deleteOnCloudinary } from "../utils/upload_On_Cloudinary.js";
 
 // 🔑 Generate Tokens
 const generateAccessAndRefreshToken = async (userId) => {
@@ -31,48 +31,73 @@ const generateAccessAndRefreshToken = async (userId) => {
 
 //  =================================== Register User  =================================== 
 
+
+
+// POST /api/users/register
 export const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, password, role, adminSecret } = req.body;
+  
+  console.log("Received keys:", req.body);
+console.log("Admin secret received:", adminSecret);
+console.log(req.headers['content-type']);
 
-  if (!fullName || !email || !password || !role) {
-    throw new ApiError(409, "Some fields are missing");
+
+  // 1️⃣ Required fields
+  if (!fullName || !email || !password) {
+    throw new ApiError(409, "Full name, email, and password are required");
   }
 
+  // 2️⃣ Admin secret validation
   if (role === "admin") {
     if (adminSecret !== process.env.ADMIN_SECRET) {
       throw new ApiError(401, "Invalid admin secret");
     }
   }
 
+  // 3️⃣ Check if user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
     throw new ApiError(409, "User already exists");
   }
 
-  let avatar = null;
+  // 4️⃣ Handle avatar upload (optional)
+  // let avatar = null;
+  // if (req.file && req.file.path) {
+  //   const result = await Cloudinary_File_Upload(req.file.path);
+  //   if (!result.url || !result.public_id) {
+  //     throw new ApiError(400, "Failed to upload avatar");
+  //   }
+  //   avatar = { url: result.url, public_id: result.public_id };
+  // }
 
-  if (req.file && req.file.path) {
-    const result = await Cloudinary_File_Upload(req.file.path);
-    if (!result.url || !result.public_id) {
-      throw new ApiError(400, "Failed to upload avatar");
-    }
-    avatar = { url: result.url, public_id: result.public_id };
-  }
-
+  // 5️⃣ Create user (password hashing is handled by model pre-save hook)
   const newUser = await User.create({
     fullName,
     email,
     password,
     role,
-    avatar,
+    // avatar,
   });
 
   if (!newUser) {
-    throw new ApiError(500, "Failed to create the new user");
+    throw new ApiError(500, "Failed to create user");
   }
 
-  return res.status(201).json(new ApiResponse(201, null, "User registered successfully"));
+  // 6️⃣ Return safe response (exclude password)
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      {
+        fullName: newUser.fullName,
+        email: newUser.email,
+        role: newUser.role,
+        // avatar: newUser.avatar,
+      },
+      "User registered successfully"
+    )
+  );
 });
+;
 
 
 
@@ -155,12 +180,14 @@ export const changePassword = asyncHandler(async (req, res) => {
 
 // ====================== Get user by ID (only admin or the user themselves)====================
 export const getUserById = asyncHandler(async (req, res) => {
-  const userId = req.params;
-
-  // The logged-in user from verifyJWT middleware
+  const { userId } = req.params;
   const requester = req.user;
 
-  // Only allow access if admin or owner of profile
+  if (!userId) {
+    throw new ApiError(404, "Invalid userID");
+  }
+
+  // Allow if admin OR if requesting own profile
   if (requester.role !== "admin" && requester._id.toString() !== userId) {
     throw new ApiError(403, "Access denied");
   }
@@ -170,10 +197,12 @@ export const getUserById = asyncHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
 });
+;
+
 
 // =================================== update use account ===================================
 export const updateUserAccount = asyncHandler(async (req, res) => {
-  const userId = req.params;
+  const { userId } = req.params;
   const requester = req.user;
 
   // Only admin or the user themselves can update
@@ -184,14 +213,10 @@ export const updateUserAccount = asyncHandler(async (req, res) => {
   const user = await User.findById(userId);
   if (!user) throw new ApiError(404, "User not found");
 
-  const { fullName, email } = req.body;
+  const { fullName } = req.body;
 
   // Update fields if provided
   if (fullName) user.fullName = fullName;
-  if (!email) {
-    throw new ApiError(404, "Chaning email is not allowed ")
-  }
-
   // Handle avatar upload
   if (req.file && req.file.path) {
     // Delete old avatar from Cloudinary if exists

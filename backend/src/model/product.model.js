@@ -1,5 +1,5 @@
-// models/Product.js
 import mongoose from "mongoose";
+import slugify from "slugify";
 
 const productSchema = new mongoose.Schema(
   {
@@ -34,11 +34,22 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0,
-    }
-
+    },
+    slug: {
+      type: String,
+      unique: true, // ensures unique slugs
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-export const Product = mongoose.model("Product", productSchema);
+// Auto-generate slug before saving
+productSchema.pre("save", function (next) {
+  if (!this.slug && this.title) {
+    this.slug = slugify(this.title, { lower: true, strict: true }) + "-" + Date.now();
+  }
+  next();
+});
 
+export const Product = mongoose.model("Product", productSchema);

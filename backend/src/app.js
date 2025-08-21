@@ -19,9 +19,11 @@ app.use(express.json());
 
 import userRoutes from "./route/user.route.js";
 import productRoutes from "./route/product.route.js";
+import orderRoutes from "./route/order.route.js"
 // Routes
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/product", productRoutes);
+app.use("/api/v1/order", orderRoutes);
 
 export default app;

@@ -1,4 +1,3 @@
-// routes/product.routes.js
 import { Router } from "express";
 import {
   createProduct,
@@ -10,38 +9,39 @@ import {
 } from "../controller/product.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import verifyJWT from "../middleware/verifyAdmin.middleware.js";
+
 const router = Router();
 
+// --------------------
 // Public Routes
+// --------------------
 router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 
+// --------------------
 // Admin Only Routes
+// --------------------
 
-router.route("/create").post(
-  upload.fields([
-    { name: "main", maxCount: 1 },
-    { name: "image2", maxCount: 1 },
-    { name: "image3", maxCount: 1 },
-    { name: "image4", maxCount: 1 },
-  ]),
+// Create Product (up to 4 images in single 'images' field)
+router.post(
+  "/create",
   verifyJWT("admin"),
+  upload.array("images", 4),
   createProduct
 );
 
+// Update Product (without images)
 router.put("/update/:id", verifyJWT("admin"), updateProduct);
 
+// Delete Product
 router.delete("/delete/:id", verifyJWT("admin"), deleteProduct);
 
-router.route("/update/:id/images").put(
-  upload.fields([
-    { name: "main", maxCount: 1 },
-    { name: "image2", maxCount: 1 },
-    { name: "image3", maxCount: 1 },
-    { name: "image4", maxCount: 1 },
-  ]),
+// Update Product Images (replace up to 4 images)
+router.put(
+  "/update/images/:id",
   verifyJWT("admin"),
+  upload.array("images", 4),
   updateProductImages
 );
 
-export default router
+export default router;
