@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { FiMenu, FiX, FiSearch } from "react-icons/fi";
+import { FiMenu, FiX, FiSearch, FiUser, FiShoppingCart } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import SearchBox from "./SearchBox";
@@ -7,7 +7,7 @@ import SearchBox from "./SearchBox";
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [showBox, setshowBox] = useState(false);
+  const [showBox, setShowBox] = useState(false);
 
   const searchDesktopRef = useRef(null);
   const searchMobileRef = useRef(null);
@@ -30,7 +30,7 @@ export default function Navbar() {
       ) {
         return;
       }
-      setshowBox(false);
+      setShowBox(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -77,20 +77,46 @@ export default function Navbar() {
           </li>
         </ul>
 
-        {/* Search Icon (Desktop) */}
-        <div className="hidden md:block relative">
-          {!showBox && (
-            <FiSearch
+        {/* Icons (Desktop) */}
+        <div className="hidden md:flex items-center gap-6">
+          {/* Search */}
+          <div ref={searchDesktopRef} className="relative">
+            {!showBox && (
+              <FiSearch
+                size={22}
+                className={`hover:text-accent cursor-pointer ${
+                  scrolled ? "text-black" : "text-white"
+                }`}
+                onClick={() => setShowBox(true)}
+              />
+            )}
+            {/* Search Modal */}
+            {/* {showBox && <SearchBox showBox={setShowBox} />} */}
+          </div>
+
+          {/* Account */}
+          <Link to="/login">
+            <FiUser
               size={22}
               className={`hover:text-accent cursor-pointer ${
                 scrolled ? "text-black" : "text-white"
               }`}
-              onClick={() => setshowBox(true)}
             />
-          )}
+          </Link>
 
-          {/* Search Box Modal */}
-          {/* {showBox && <SearchBox showBox={setshowBox} />} */}
+          {/* Cart */}
+          <Link to="/cart" className="relative">
+            <FiShoppingCart
+              size={22}
+              className={`hover:text-accent cursor-pointer ${
+                scrolled ? "text-black" : "text-white"
+              }`}
+            />
+            {/* Example cart badge */}
+            <span className="absolute -top-2 -right-2 bg-accent text-white text-xs font-bold rounded-full px-1.5">
+              2
+            </span>
+          </Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -105,9 +131,9 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-primary px-6 py-4 space-y-4 shadow-lg">
-          <a href="#" className="block hover:text-accent">
+          <Link to="/" className="block hover:text-accent">
             Home
-          </a>
+          </Link>
           <a href="#products" className="block hover:text-accent">
             Products
           </a>
@@ -120,6 +146,25 @@ export default function Navbar() {
           <a href="#contact" className="block hover:text-accent">
             Contact
           </a>
+
+          {/* Mobile Icons */}
+          <div className="flex items-center gap-6 pt-4 border-t border-gray-300">
+            <FiSearch
+              size={22}
+              className="hover:text-accent cursor-pointer text-white"
+              onClick={() => setShowBox(true)}
+              ref={searchMobileRef}
+            />
+            <Link to="/account">
+              <FiUser size={22} className="hover:text-accent cursor-pointer text-white" />
+            </Link>
+            <Link to="/cart" className="relative">
+              <FiShoppingCart size={22} className="hover:text-accent cursor-pointer text-white" />
+              <span className="absolute -top-2 -right-2 bg-accent text-white text-xs font-bold rounded-full px-1.5">
+                2
+              </span>
+            </Link>
+          </div>
         </div>
       )}
     </nav>

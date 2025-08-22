@@ -33,7 +33,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 
 
 
-// POST /api/users/register
+// POST /api/user/register
 export const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, password, role, adminSecret } = req.body;
   
@@ -179,30 +179,23 @@ export const changePassword = asyncHandler(async (req, res) => {
 
 
 // ====================== Get user by ID (only admin or the user themselves)====================
-export const getUserById = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
-  const requester = req.user;
 
-  if (!userId) {
-    throw new ApiError(404, "Invalid userID");
-  }
+export const getCurrentUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password -refreshToken");
 
-  // Allow if admin OR if requesting own profile
-  if (requester.role !== "admin" && requester._id.toString() !== userId) {
-    throw new ApiError(403, "Access denied");
-  }
-
-  const user = await User.findById(userId).select("-password -refreshToken");
   if (!user) throw new ApiError(404, "User not found");
 
-  res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Current user fetched successfully"));
 });
+
 ;
 
 
 // =================================== update use account ===================================
 export const updateUserAccount = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+
   const requester = req.user;
 
   // Only admin or the user themselves can update
@@ -210,7 +203,7 @@ export const updateUserAccount = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Access denied");
   }
 
-  const user = await User.findById(userId);
+  const user = await User.findById(requester._id);
   if (!user) throw new ApiError(404, "User not found");
 
   const { fullName } = req.body;

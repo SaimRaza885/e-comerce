@@ -7,6 +7,7 @@ cloudinary.config({
   api_secret: "woSyf7VPuLVhfD0PHW4BgpJ37wA", 
 });
 
+
 const Cloudinary_File_Upload = async (FilePath) => {
   try {
     if (!FilePath) return null;
@@ -17,11 +18,15 @@ const Cloudinary_File_Upload = async (FilePath) => {
 
     return uploadResult;
   } catch (error) {
-    console.log("Cloudinary Upload Error:", error.message);
+    console.error("Cloudinary Upload Error:", error);
     return null;
   } finally {
-    if (fs.existsSync(FilePath)) {
-      fs.unlinkSync(FilePath); // Clean up the temp file
+    try {
+      if (fs.existsSync(FilePath)) {
+        fs.unlinkSync(FilePath); // Clean up temp file safely
+      }
+    } catch (unlinkError) {
+      console.error("File cleanup failed:", unlinkError);
     }
   }
 };
