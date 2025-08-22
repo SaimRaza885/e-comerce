@@ -15,7 +15,7 @@ const router = Router();
 // --------------------
 // Public Routes
 // --------------------
-router.get("/", getAllProducts);
+router.get("/all", getAllProducts);
 router.get("/:id", getProductById);
 
 // --------------------

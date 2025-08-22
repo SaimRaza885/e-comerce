@@ -14,7 +14,7 @@ const Small_Banner = ({ title, subtitle, bgImage }) => {
         <h1 className="text-4xl md:text-6xl font-bold mb-3 drop-shadow-lg ">
           {title}
         </h1>
-        <p className="text-lg md:text-2xl max-w-2xl mx-auto drop-shadow-md opacity-75">
+        <p className="text-lg md:text-2xl max-w-2xl mx-auto drop-shadow-md ">
           {subtitle}
         </p>
       </div>

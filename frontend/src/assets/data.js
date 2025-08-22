@@ -109,6 +109,7 @@ import image_2 from "./images/beans.jpg";
 import image_3 from "./images/walnuts.jpg";
 import image_4 from "./images/about.jpeg";
 import shop_image from "./images/shop_banner.jpeg";
+import shop_image1 from "./images/shop.jpg";
 export const slides = [
   {
     image: image_1,
@@ -132,6 +133,7 @@ export const Images = {
   image_2,
   image_3,
   image_4,
+  shop_image1,
   shop_image
 };
 export const faqData = [
