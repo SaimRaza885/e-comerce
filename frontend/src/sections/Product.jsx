@@ -52,24 +52,23 @@ const ProductSection = () => {
         {loading
           ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
           : error
-          ? <div className="col-span-full text-center text-red-600">{error}</div>
-          : products.slice(0, 4).map((product) => (
+            ? <div className="col-span-full text-center text-red-600">{error}</div>
+            : products.slice(0, 4).map((product) => (
               <ProductCard key={product._id} product={product} />
             ))
         }
       </div>
 
       {/* Show All Button */}
-      {!loading && !error && products.length > 4 && (
-        <div className="text-center mt-10">
-          <Link
-            to="products/all"
-            className="inline-block bg-accent text-black font-medium px-6 py-3 rounded-full shadow hover:bg-mint-600 transition"
-          >
-            View All Products
-          </Link>
-        </div>
-      )}
+      <div className="text-center mt-10">
+        <Link
+          to="products/all"
+          className="inline-block bg-accent text-black font-medium px-6 py-3 rounded-full shadow hover:bg-mint-600 transition"
+        >
+          View All Products
+        </Link>
+      </div>
+
     </section>
   );
 };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
+import Logo from "../components/Logo";
 
 export default function LogoutButton() {
 
@@ -18,6 +19,7 @@ export default function LogoutButton() {
             setLoading(true)
             await api.post("/user/logout", {}, { withCredentials: true }); // call backend logout
             localStorage.removeItem("accessToken"); // clear local storage token
+            localStorage.removeItem("cart")
             setLoading(false)
             Navigate("/")
         } catch (err) {
@@ -28,6 +30,9 @@ export default function LogoutButton() {
     return (
 
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+            <div className="flex items-center w-full justify-center">
+                <Logo />
+            </div>
             <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6">
                 <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
                     Logout

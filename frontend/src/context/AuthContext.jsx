@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
         setUser(res.data.data); // backend should return user data here
       } catch (err) {
-        console.error("Failed to fetch profile:", err.response?.data || err.message);
+        console.error("Failed to fetch profile:",);
       }
     };
 

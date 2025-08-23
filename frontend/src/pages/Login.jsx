@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../api/axios"; // your axios instance
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import Logo from "../components/Logo";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -44,6 +45,7 @@ export default function Login() {
 
   return (
  <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+
   <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6">
     <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
       Login

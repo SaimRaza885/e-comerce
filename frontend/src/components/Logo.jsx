@@ -1,10 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-const Logo = () => {
+const Logo = ({size=24}) => {
     return (
         <Link to={"/"}>
-            <h1 className="text-2xl font-bold text-accent">Gilgit Dry Fruits</h1>
+            <h1 className={`text-[${size}px] font-bold text-accent`}>Gilgit Dry Fruits</h1>
 
         </Link>
     )

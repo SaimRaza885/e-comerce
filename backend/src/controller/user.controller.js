@@ -36,10 +36,10 @@ const generateAccessAndRefreshToken = async (userId) => {
 // POST /api/user/register
 export const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, password, role, adminSecret } = req.body;
-  
+
   console.log("Received keys:", req.body);
-console.log("Admin secret received:", adminSecret);
-console.log(req.headers['content-type']);
+  console.log("Admin secret received:", adminSecret);
+  console.log(req.headers['content-type']);
 
 
   // 1️⃣ Required fields
@@ -63,8 +63,8 @@ console.log(req.headers['content-type']);
   // 4️⃣ Handle avatar upload (optional)
   let avatar = null;
 
-if (req.file && req.file.path) {
-  try {
+  if (req.file && req.file.path) {
+
     const result = await Cloudinary_File_Upload(req.file.path);
 
     if (!result.url || !result.public_id) {
@@ -72,10 +72,8 @@ if (req.file && req.file.path) {
     }
 
     avatar = { url: result.url, public_id: result.public_id };
-  } catch (err) {
-    throw new ApiError(500, "Error uploading avatar");
+
   }
-}
 
 
   // 5️⃣ Create user (password hashing is handled by model pre-save hook)
@@ -99,7 +97,7 @@ if (req.file && req.file.path) {
         fullName: newUser.fullName,
         email: newUser.email,
         role: newUser.role,
-        // avatar: newUser.avatar,
+        avatar: newUser.avatar,
       },
       "User registered successfully"
     )
@@ -264,29 +262,29 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
 
-    // verify token
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET);
+  // verify token
+  const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET);
 
-    // find user
-    const user = await User.findById(decoded._id);
-    if (!user) throw new ApiError(401, "User not found");
+  // find user
+  const user = await User.findById(decoded._id);
+  if (!user) throw new ApiError(401, "User not found");
 
-    // check if refresh token matches
-    if (user.refreshToken !== refreshToken) {
-      throw new ApiError(401, "Invalid refresh token");
-    }
+  // check if refresh token matches
+  if (user.refreshToken !== refreshToken) {
+    throw new ApiError(401, "Invalid refresh token");
+  }
 
-    // issue new access token
-    const accessToken = user.generateAccessToken();
+  // issue new access token
+  const accessToken = user.generateAccessToken();
 
-    return res
-      .cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-      })
-      .status(200)
-      .json(new ApiResponse(200, { accessToken }, "New access token issued"));
-  
+  return res
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    })
+    .status(200)
+    .json(new ApiResponse(200, { accessToken }, "New access token issued"));
+
 });
 
 

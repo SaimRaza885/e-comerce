@@ -110,6 +110,7 @@ import image_3 from "./images/walnuts.jpg";
 import image_4 from "./images/about.jpeg";
 import shop_image from "./images/shop_banner.jpeg";
 import shop_image1 from "./images/shop.jpg";
+import order_Image from "./images/order.avif";
 export const slides = [
   {
     image: image_1,
@@ -134,7 +135,8 @@ export const Images = {
   image_3,
   image_4,
   shop_image1,
-  shop_image
+  shop_image,
+  order_Image
 };
 export const faqData = [
   {

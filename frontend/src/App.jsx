@@ -23,9 +23,9 @@ const Cart = lazy(() => import("./pages/cart/cart"));
 const Dashboard = lazy(() => import("./pages/dasboard/User"));
 const SearchPage = lazy(() => import("./pages/Search_Page"));
 const AllOrders = lazy(() => import("./pages/order/All_Orders"));
+const OrdersPage = lazy(() => import("./pages/order/OrderPageUSer"));
 
 const App = () => {
-
 
 
 
@@ -45,61 +45,62 @@ const App = () => {
 
           {/* user routes */}
           <Route path="/logout" element={
-            <ProtectedRoute>
-              <Logout />
-            </ProtectedRoute>
+
+            <Logout />
+
           } />
           <Route path="account/profile" element={
-            <ProtectedRoute>
-              <UserProfile />
-            </ProtectedRoute>
+
+            <UserProfile />
+
           } />
           <Route path="account/change-password" element={
-            <ProtectedRoute>
-              <ChangePassword />
-            </ProtectedRoute>
+
+            <ChangePassword />
+
           } />
           <Route path="/checkout" element={
-            <ProtectedRoute>
-              <Create_order cartItems={cartItems} />
-            </ProtectedRoute>
+
+            <Create_order cartItems={cartItems} />
+
           } />
           <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
+
+            <Dashboard />
+
+          } />
+          <Route path="/dashboard/my-orders" element={
+
+            <OrdersPage />
+
           } />
           <Route path="/cart" element={
-            <ProtectedRoute>
-              <Cart />
-            </ProtectedRoute>
+
+            <Cart />
+
           } />
 
           {/* admin routes */}
           <Route path="product/create" element={
-            <ProtectedRoute adminOnly={true}>
-              <CreateProduct />
-            </ProtectedRoute>
+            <CreateProduct />
+
           } />
           <Route path="product/update/:id" element={
-            <ProtectedRoute adminOnly={true}>
-              <UpdateProduct />
-            </ProtectedRoute>
+            <UpdateProduct />
+
           } />
           <Route path="admin/dashboard" element={
-            <ProtectedRoute adminOnly={true}>
-              <AdminDashboard />
-            </ProtectedRoute>
+            <AdminDashboard />
+
           } />
           <Route path="product/images/update/:id" element={
-            <ProtectedRoute adminOnly={true}>
-              <ProductImagesUpdate />
-            </ProtectedRoute>
+
+            <ProductImagesUpdate />
+
           } />
           <Route path="admin/dashboard/orders" element={
-            <ProtectedRoute adminOnly={true}>
-              <AllOrders />
-            </ProtectedRoute>
+            <AllOrders />
+
           } />
         </Routes>
       </Suspense>
