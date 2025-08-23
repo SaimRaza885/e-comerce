@@ -1,20 +1,18 @@
-// src/pages/AdminDashboard.jsx
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
-import AdminProductCard from "../../components/ADminProductCard";
 import { useNavigate } from "react-router-dom";
+import api from "../../api/axios";
+
+// components
+import DashboardHeader from "../../components/DashboardHeader";
+import LoadingSkeleton from "../../components/LoadingSkeleton";
+import AdminProductCard from "../../components/AdminProductCard";
+import AdminProductCardMobile from "../../components/AdminProductCardMobile";
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  // Example access control
-//   const isAdmin = localStorage.getItem("role") === "admin";
-//   useEffect(() => {
-//     if (!isAdmin) navigate("/"); // redirect non-admin users
-//   }, [isAdmin, navigate]);
 
   // Fetch products
   useEffect(() => {
@@ -33,10 +31,7 @@ const AdminDashboard = () => {
     fetchProducts();
   }, []);
 
-  const handleEdit = (id) => {
-    navigate(`/product/update/${id}`);
-  };
-
+  const handleEdit = (id) => navigate(`/product/update/${id}`);
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
@@ -46,36 +41,18 @@ const AdminDashboard = () => {
       alert(err.response?.data?.message || "Failed to delete product");
     }
   };
+  const handleCreate = () => navigate("/product/create");
 
-  const handleCreate = () => {
-    navigate("/product/create");
-  };
-
-  if (loading) {
-    return (
-      <div className="max-w-6xl mx-auto py-10 px-4 animate-pulse">
-        <div className="h-10 bg-gray-200 rounded mb-4 w-1/4"></div>
-        <div className="h-64 bg-gray-200 rounded"></div>
-      </div>
-    );
-  }
-
+  if (loading) return <LoadingSkeleton />;
   if (error) return <div className="text-red-600 py-10 text-center">{error}</div>;
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button
-          onClick={handleCreate}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition"
-        >
-          Create Product
-        </button>
-      </div>
+      <DashboardHeader onCreate={handleCreate} />
 
-      <div className="overflow-x-auto bg-white shadow rounded-lg">
-        <table className="w-full text-left">
+      {/* Desktop: Table view */}
+      <div className="hidden md:block overflow-x-auto bg-white shadow rounded-lg">
+        <table className="w-full text-left text-sm">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-4 py-2">Image</th>
@@ -85,6 +62,7 @@ const AdminDashboard = () => {
               <th className="px-4 py-2">Stock</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Actions</th>
+              <th className="px-4 py-2">Created On</th>
             </tr>
           </thead>
           <tbody>
@@ -98,6 +76,18 @@ const AdminDashboard = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile: Card view */}
+      <div className="md:hidden grid gap-4">
+        {products.map((product) => (
+          <AdminProductCardMobile
+            key={product._id}
+            product={product}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
       </div>
     </div>
   );

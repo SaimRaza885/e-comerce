@@ -6,6 +6,7 @@ import {
   updateProduct,
   deleteProduct,
   updateProductImages,
+  SeachProduct,
 } from "../controller/product.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import verifyJWT from "../middleware/verifyAdmin.middleware.js";
@@ -38,10 +39,11 @@ router.delete("/delete/:id", verifyJWT("admin"), deleteProduct);
 
 // Update Product Images (replace up to 4 images)
 router.put(
-  "/update/images/:id",
+  "/images/update/",
   verifyJWT("admin"),
   upload.array("images", 4),
   updateProductImages
 );
 
+router.get("/search", SeachProduct)
 export default router;

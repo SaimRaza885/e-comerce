@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "../api/axios";
+
+import api from "../api/axios";
 
 const AuthContext = createContext();
 
@@ -8,13 +9,24 @@ export const AuthProvider = ({ children }) => {
 
 
 
-  
+  // fetch profile from backend using token in localStorage
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/user/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
 
-  // ✅ Login helper (optional, since Login.js already does it)
+        setUser(res.data.data); // backend should return user data here
+      } catch (err) {
+        console.error("Failed to fetch profile:", err.response?.data || err.message);
+      }
+    };
 
-
-  // ✅ Logout
-
+    fetchProfile();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user }}>

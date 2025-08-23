@@ -124,31 +124,52 @@ export const updateProductImages = asyncHandler(async (req, res) => {
   const product = await Product.findById(id);
   if (!product) throw new ApiError(404, "Product not found");
 
-  let updatedImages = [...product.images];
-  const fieldIndexMap = { main: 0, image2: 1, image3: 2, image4: 3 };
-
-  for (const field in req.files) {
-    const file = req.files[field]?.[0];
-    if (!file) continue;
-
-    const result = await Cloudinary_File_Upload(file.path);
-    if (!result?.secure_url) {
-      throw new ApiError(400, "Failed to upload image to Cloudinary");
-    }
-
-    const index = fieldIndexMap[field];
-    if (updatedImages[index]) {
-      if (updatedImages[index].public_id) await deleteOnCloudinary(updatedImages[index].public_id);
-      updatedImages[index] = { url: result.secure_url, public_id: result.public_id };
-    } else {
-      updatedImages.push({ url: result.secure_url, public_id: result.public_id });
-    }
+  if (!req.files || req.files.length === 0) {
+    throw new ApiError(400, "At least one image is required to update");
   }
 
-  product.images = updatedImages;
+  if (req.files.length + product.images.length > 4) {
+    throw new ApiError(400, "You can upload a maximum of 4 images in total");
+  }
+
+  const uploadedImages = [];
+
+  for (const file of req.files) {
+    const result = await Cloudinary_File_Upload(file.path);
+    if (!result?.secure_url) {
+      throw new ApiError(500, "Failed to upload image to Cloudinary");
+    }
+
+    uploadedImages.push({
+      url: result.secure_url,
+      public_id: result.public_id,
+    });
+  }
+
+  // Optionally: Delete old images if you want to replace all
+  for (const img of product.images) {
+    if (img.public_id) await deleteOnCloudinary(img.public_id);
+  }
+
+  // Append new images
+  product.images = [...product.images, ...uploadedImages];
+
   await product.save();
 
   return res
     .status(200)
     .json(new ApiResponse(200, product, "Product images updated successfully"));
+});
+
+
+
+export const  SeachProduct = asyncHandler(async (req, res) => {
+
+  const query = req.query.q || "";
+  const products = await Product.find({
+    title: { $regex: query, $options: "i" }  // case-insensitive
+  });
+
+  return res.status(200).json(new ApiResponse(201,products,"Find the seached prodct"))
+
 });

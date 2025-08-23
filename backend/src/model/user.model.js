@@ -26,10 +26,10 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
-    // avatar: {
-    //   url: { type: String, required: true },
-    //   public_id: { type: String, required: true },
-    // }
+    avatar: {
+      url: { type: String, required: true },
+      public_id: { type: String, required: true },
+    }
   },
   { timestamps: true }
 );

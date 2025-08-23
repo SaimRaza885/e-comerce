@@ -1,6 +1,6 @@
 // src/pages/UpdateProduct.jsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
 
 const UpdateProduct = () => {
@@ -17,6 +17,7 @@ const UpdateProduct = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate()
 
   // Fetch existing product
   useEffect(() => {
@@ -60,6 +61,7 @@ const UpdateProduct = () => {
     try {
       const res = await api.put(`/product/update/${id}`, formData);
       setSuccess("Product updated successfully!");
+      navigate("/admin/dashboard")
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update product");
     } finally {

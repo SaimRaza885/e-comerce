@@ -1,9 +1,10 @@
-// src/pages/ProductDetail.jsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FiShoppingCart, FiMinus, FiPlus } from "react-icons/fi";
 import api from "../api/axios";
 import ProductImages from "../components/ProductImages";
+import { useCart } from "../context/Cart";
+import Small_Banner from "../components/Small_Banner";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -11,6 +12,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { addToCart } = useCart(); // use cart context
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -34,8 +36,8 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    // Replace with cart context or localStorage logic
-    alert(`Added ${quantity} x ${product.title} to cart!`);
+    addToCart(product, quantity);
+    alert(`${quantity} x ${product.title} added to cart!`);
   };
 
   if (loading)
@@ -57,14 +59,14 @@ const ProductDetail = () => {
 
   if (error)
     return (
-      <div className="text-center py-20 text-red-600">
-        {error}
-      </div>
+      <div className="text-center py-20 text-red-600">{error}</div>
     );
 
   if (!product) return null;
 
   return (
+    <>
+    <Small_Banner title={product.urdu_name}  bgImage={product.images[0].url} subtitle={""}/>
     <div className="max-w-6xl mx-auto py-16 px-4">
       <div className="flex flex-col md:flex-row gap-10">
         {/* Images */}
@@ -76,7 +78,7 @@ const ProductDetail = () => {
           {product.urdu_name && (
             <p className="text-gray-500 mb-4 text-lg">{product.urdu_name}</p>
           )}
-          <p className="text-2xl font-bold  mb-4">{product.price} PKR / kg</p>
+          <p className="text-2xl font-bold mb-4">{product.price} PKR / kg</p>
           <p
             className={`text-sm font-medium mb-4 ${
               product.inStock ? "text-green-600" : "text-red-600"
@@ -134,6 +136,7 @@ const ProductDetail = () => {
         </div>
       </div>
     </div>
+              </>
   );
 };
 

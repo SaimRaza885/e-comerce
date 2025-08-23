@@ -61,7 +61,7 @@ const AboutSection = () => {
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            <div className="flex  gap-4 mt-6">
               <Link
                 to="/products/all"
                 className="inline-block font-medium px-6 py-3 rounded-full shadow transition w-max border text-black  hover:bg-transparent hover:text-mint-500 hover:scale-105"

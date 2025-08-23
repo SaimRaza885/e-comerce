@@ -13,7 +13,7 @@ const router = express.Router();
 // ------------------- User Routes -------------------
 
 // Create a new order
-router.post("/create", verifyJWT("user"), createOrder);
+router.post("/create", verifyJWT(""), createOrder);
 
 // Get orders of logged-in user
 router.get("/my-orders", verifyJWT("user"), getUserOrders);

@@ -61,14 +61,22 @@ console.log(req.headers['content-type']);
   }
 
   // 4️⃣ Handle avatar upload (optional)
-  // let avatar = null;
-  // if (req.file && req.file.path) {
-  //   const result = await Cloudinary_File_Upload(req.file.path);
-  //   if (!result.url || !result.public_id) {
-  //     throw new ApiError(400, "Failed to upload avatar");
-  //   }
-  //   avatar = { url: result.url, public_id: result.public_id };
-  // }
+  let avatar = null;
+
+if (req.file && req.file.path) {
+  try {
+    const result = await Cloudinary_File_Upload(req.file.path);
+
+    if (!result.url || !result.public_id) {
+      throw new ApiError(400, "Failed to upload avatar");
+    }
+
+    avatar = { url: result.url, public_id: result.public_id };
+  } catch (err) {
+    throw new ApiError(500, "Error uploading avatar");
+  }
+}
+
 
   // 5️⃣ Create user (password hashing is handled by model pre-save hook)
   const newUser = await User.create({
@@ -76,7 +84,7 @@ console.log(req.headers['content-type']);
     email,
     password,
     role,
-    // avatar,
+    avatar,
   });
 
   if (!newUser) {
@@ -244,4 +252,42 @@ export const updateUserAccount = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(201, updatedUserData, "User updated successfully"))
 });
+
+
+
+// ====================== Refresh Access Token ======================
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!refreshToken) {
+    throw new ApiError(401, "No refresh token provided");
+  }
+
+
+    // verify token
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET);
+
+    // find user
+    const user = await User.findById(decoded._id);
+    if (!user) throw new ApiError(401, "User not found");
+
+    // check if refresh token matches
+    if (user.refreshToken !== refreshToken) {
+      throw new ApiError(401, "Invalid refresh token");
+    }
+
+    // issue new access token
+    const accessToken = user.generateAccessToken();
+
+    return res
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      })
+      .status(200)
+      .json(new ApiResponse(200, { accessToken }, "New access token issued"));
+  
+});
+
+
 

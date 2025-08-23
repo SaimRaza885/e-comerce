@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from "../../api/axios";
+import { useNavigate } from 'react-router-dom';
 
 const CreateProduct = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const CreateProduct = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate =useNavigate()
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -47,6 +49,7 @@ const CreateProduct = () => {
       setSuccess(res.data.datacd);
       setFormData({ title: '', urdu_name: '', description: '', price: '', inStock: true, stock: '' });
       setImages([]);
+      navigate("/admin/dashboard")
     } catch (err) {
       setError(err.message || 'Failed to create product');
     } finally {

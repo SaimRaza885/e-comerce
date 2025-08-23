@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../api/axios"; // your axios instance
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -9,6 +10,7 @@ export default function Register() {
     role: "user",
     adminSecret: "",
   });
+  const navigate = useNavigate()
   const [avatar, setAvatar] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -38,6 +40,8 @@ export default function Register() {
       });
 
       setMessage(res.data.message || "Registered successfully!");
+
+      navigate("/login")
     } catch (err) {
       setMessage(
         err.response?.data?.message || "Something went wrong, try again."
@@ -91,7 +95,7 @@ export default function Register() {
             name="role"
             value={form.role}
             onChange={handleChange}
-            className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
+            className="w-full p-3 pr-4 border rounded-lg focus:ring focus:ring-blue-300"
           >
             <option value="user">User</option>
             <option value="admin">Admin</option>
@@ -114,6 +118,12 @@ export default function Register() {
             onChange={handleFile}
             className="w-full p-2 border rounded-lg"
           />
+          <p className="mt-4 text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-600 hover:underline">
+              Login
+            </Link>
+          </p>
 
           <button
             type="submit"
