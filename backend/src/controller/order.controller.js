@@ -85,7 +85,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 export const Delete_Order = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const order = await Order.findOneAndDelete({ _id: id, user: req.user._id });
+  const order = await Order.findOneAndDelete({ _id: id });
   if (!order) throw new ApiError(404, "Order not found");
 
   return res

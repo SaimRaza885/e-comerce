@@ -37,7 +37,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
-    alert(`${quantity} x ${product.title} added to cart!`);
+    // alert(`${quantity} x ${product.title} added to cart!`);
   };
 
   if (loading)

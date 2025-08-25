@@ -37,11 +37,6 @@ const generateAccessAndRefreshToken = async (userId) => {
 export const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, password, role, adminSecret } = req.body;
 
-  console.log("Received keys:", req.body);
-  console.log("Admin secret received:", adminSecret);
-  console.log(req.headers['content-type']);
-
-
   // 1️⃣ Required fields
   if (!fullName || !email || !password) {
     throw new ApiError(409, "Full name, email, and password are required");
@@ -61,19 +56,19 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 
   // 4️⃣ Handle avatar upload (optional)
-  let avatar = null;
+  // let avatar = null;
 
-  if (req.file && req.file.path) {
+  // if (req.file && req.file.path) {
 
-    const result = await Cloudinary_File_Upload(req.file.path);
+  //   const result = await Cloudinary_File_Upload(req.file.path);
 
-    if (!result.url || !result.public_id) {
-      throw new ApiError(400, "Failed to upload avatar");
-    }
+  //   if (!result.url || !result.public_id) {
+  //     throw new ApiError(400, "Failed to upload avatar");
+  //   }
 
-    avatar = { url: result.url, public_id: result.public_id };
+  //   avatar = { url: result.url, public_id: result.public_id };
 
-  }
+  // }
 
 
   // 5️⃣ Create user (password hashing is handled by model pre-save hook)
@@ -82,7 +77,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     role,
-    avatar,
+    // avatar,
   });
 
   if (!newUser) {
@@ -205,9 +200,9 @@ export const updateUserAccount = asyncHandler(async (req, res) => {
   const requester = req.user;
 
   // Only admin or the user themselves can update
-  if (requester.role !== "admin" && requester._id.toString() !== userId) {
-    throw new ApiError(403, "Access denied");
-  }
+  // if (requester.role !== "admin" && requester._id.toString() !== userId) {
+  //   throw new ApiError(403, "Access denied");
+  // }
 
   const user = await User.findById(requester._id);
   if (!user) throw new ApiError(404, "User not found");
@@ -217,33 +212,33 @@ export const updateUserAccount = asyncHandler(async (req, res) => {
   // Update fields if provided
   if (fullName) user.fullName = fullName;
   // Handle avatar upload
-  if (req.file && req.file.path) {
-    // Delete old avatar from Cloudinary if exists
-    if (user.avatar?.public_id) {
-      await deleteOnCloudinary(user.avatar.public_id);
-    }
+  // if (req.file && req.file.path) {
+  //   // Delete old avatar from Cloudinary if exists
+  //   if (user.avatar?.public_id) {
+  //     await deleteOnCloudinary(user.avatar.public_id);
+  //   }
 
-    // Upload new avatar
-    const result = await Cloudinary_File_Upload(req.file.path);
-    if (!result.url || !result.public_id) {
-      throw new ApiError(400, "Failed to upload avatar");
-    }
-    user.avatar = {
-      url: result.url,
-      public_id: result.public_id,
-    };
-  }
+  //   // Upload new avatar
+  //   const result = await Cloudinary_File_Upload(req.file.path);
+  //   if (!result.url || !result.public_id) {
+  //     throw new ApiError(400, "Failed to upload avatar");
+  //   }
+  //   user.avatar = {
+  //     url: result.url,
+  //     public_id: result.public_id,
+  //   };
+  // }
 
   await user.save();
 
   // Exclude sensitive fields in response
   const updatedUserData = {
-    _id: user._id,
+    // _id: user._id,
     fullName: user.fullName,
-    email: user.email,
-    role: user.role,
-    avatar: user.avatar,
-    createdAt: user.createdAt,
+    // email: user.email,
+    // role: user.role,
+    // avatar: user.avatar,
+    // createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
 
@@ -255,7 +250,7 @@ export const updateUserAccount = asyncHandler(async (req, res) => {
 
 // ====================== Refresh Access Token ======================
 export const refreshAccessToken = asyncHandler(async (req, res) => {
-  const refreshToken = req.cookies?.refreshToken;
+  const refreshToken = req.cookies?.refreshToken ||  req.header("Authorization")?.replace("Bearer ", "");
 
   if (!refreshToken) {
     throw new ApiError(401, "No refresh token provided");

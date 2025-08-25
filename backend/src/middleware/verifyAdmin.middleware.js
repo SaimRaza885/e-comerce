@@ -14,24 +14,29 @@ const verifyJWT = (requiredRole = null) =>
       throw new ApiError(401, "Unauthorized: No token provided");
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_TOKEN_SECRET
-    );
+    try {
+      // 🔐 Verify token
+      const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET);
 
-    const user = await User.findById(decoded._id);
+      const user = await User.findById(decoded._id).select("-password -refreshToken");
+      if (!user) {
+        throw new ApiError(401, "User not found");
+      }
 
-    if (!user) {
-      throw new ApiError(401, "User not found");
+      // 🔐 Optional role check
+      if (requiredRole && user.role !== requiredRole) {
+        throw new ApiError(403, `Access denied for role: ${user.role}`);
+      }
+
+      req.user = user; // Save user in request
+      next();
+    } catch (error) {
+      if (error.name === "TokenExpiredError") {
+        // 👈 Handle token expiry cleanly
+        throw new ApiError(401, "Access token expired, please refresh");
+      }
+      throw new ApiError(401, "Invalid or malformed token");
     }
-
-    // If a role is required, check it
-    if (requiredRole && user.role !== requiredRole) {
-      throw new ApiError(403, `Access denied for role: ${user.role}`);
-    }
-
-    req.user = user; // Save user in request
-    next();
   });
 
 export default verifyJWT;

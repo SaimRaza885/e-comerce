@@ -7,6 +7,7 @@ import DashboardHeader from "../../components/DashboardHeader";
 import LoadingSkeleton from "../../components/LoadingSkeleton";
 import AdminProductCard from "../../components/AdminProductCard";
 import AdminProductCardMobile from "../../components/AdminProductCardMobile";
+import BackArrow from "../../components/BackArrow";
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
@@ -41,14 +42,14 @@ const AdminDashboard = () => {
       alert(err.response?.data?.message || "Failed to delete product");
     }
   };
-  const handleCreate = () => navigate("/product/create");
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <div className="text-red-600 py-10 text-center">{error}</div>;
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
-      <DashboardHeader onCreate={handleCreate} />
+      <BackArrow/>
+      <DashboardHeader/>
 
       {/* Desktop: Table view */}
       <div className="hidden md:block overflow-x-auto bg-white shadow rounded-lg">

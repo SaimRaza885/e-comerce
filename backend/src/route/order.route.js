@@ -13,13 +13,13 @@ const router = express.Router();
 // ------------------- User Routes -------------------
 
 // Create a new order
-router.post("/create", verifyJWT(""), createOrder);
+router.post("/create", verifyJWT("user"), createOrder);
 
 // Get orders of logged-in user
 router.get("/my-orders", verifyJWT("user"), getUserOrders);
 
 // Delete/cancel an order (only by owner)
-router.delete("/delete/:id", verifyJWT("user"), Delete_Order);
+router.delete("/delete/:id", verifyJWT(), Delete_Order);
 
 // ------------------- Admin Routes -------------------
 

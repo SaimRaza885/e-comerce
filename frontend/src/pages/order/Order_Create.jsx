@@ -48,7 +48,7 @@ const Checkout = () => {
 
             setSuccess("Order placed successfully!");
             clearCart();
-            navigate("/"); // redirect to home or order confirmation page
+            navigate("/dashboard"); // redirect to home or order confirmation page
         } catch (err) {
             setError(err.response?.data?.message || "Failed to place order");
         } finally {

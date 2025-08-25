@@ -4,14 +4,26 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Small_Banner from "../../components/Small_Banner";
 import { Images } from "../../assets/data";
+import { useEffect } from "react";
+import BackArrow from "../../components/BackArrow";
 
 const Cart = () => {
     const { cartItems, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
     const navigate = useNavigate();
 
+    useEffect(() => {
+
+        if (!localStorage.getItem("accessToken")) {
+            navigate("/login")
+        }
+
+    }, [])
+
+
     if (cartItems.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+                <BackArrow />
                 <h2 className="text-4xl font-bold mb-4 text-gray-800">Your Cart is Empty</h2>
                 <p className="text-gray-500 mb-6">Looks like you haven’t added anything yet.</p>
 
@@ -26,12 +38,12 @@ const Cart = () => {
     return (
         <>
             <Navbar />
-            <Small_Banner title={"Shopping Cart"}  bgImage={Images.shop_image} subtitle={"Review the items in your cart before checking out."}/>
+            <Small_Banner title={"Shopping Cart"} bgImage={Images.shop_image} subtitle={"Review the items in your cart before checking out."} />
             <div className="min-h-screen bg-gray-50 py-16 px-4">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
                     {/* Cart Items */}
                     <div className="flex-1 space-y-6">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-4">Cart Itemst</h1>
+                        <h1 className="text-3xl font-bold text-gray-800 mb-4">Cart Items</h1>
                         {cartItems.map((item) => (
                             <div
                                 key={item._id}

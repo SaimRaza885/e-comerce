@@ -3,12 +3,16 @@ import { Link } from "react-router-dom";
 import { FiMail, FiUser, FiCheckCircle, FiLock, FiEdit } from "react-icons/fi";
 import Navbar from "../components/Navbar";
 import api from "../api/axios";
+import UpdateFullName from "./Update_FullName";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false)
+  const [isModalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setLoading(true);
       try {
         const res = await api.get("/user/me", {
           headers: {
@@ -18,20 +22,34 @@ export default function ProfilePage() {
         setUser(res.data.data);
       } catch (err) {
         console.error("Failed to fetch profile:", err.response?.data || err.message);
+      } finally {
+        setLoading(false); // ✅ Now only runs after fetch completes
       }
     };
+
     fetchProfile();
-  }, []);
+  }, [isModalOpen]);
+
 
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500 text-lg">
-          Not logged in. Please <Link to="/login" className="text-blue-500 underline">login</Link> to continue.
-        </p>
+        {loading ? (
+          <p className="text-gray-500 text-xl">Loading...</p>
+        ) : (
+          <p className="text-red-500 text-lg">
+            Not logged in. Please{" "}
+            <Link to="/login" className="text-blue-500 underline">
+              login
+            </Link>{" "}
+            to continue.
+          </p>
+        )}
       </div>
     );
   }
+
+
 
   return (
     <>
@@ -66,19 +84,23 @@ export default function ProfilePage() {
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-4 mt-4 sm:mt-0">
-                <Link to="/account/edit">
-                  <button className="flex items-center gap-2 justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow transition">
-                    <FiEdit /> Edit Profile
-                  </button>
-                </Link>
+
+                <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow transition">
+                  <FiEdit /> Change Name
+                </button>
+                <UpdateFullName
+                  id={user._id} // Replace with real user ID
+                  isOpen={isModalOpen}
+                  onClose={() => setModalOpen(false)}
+                />
                 <Link to="/account/change-password">
                   <button className="flex items-center gap-2 justify-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl shadow transition">
                     <FiLock /> Change Password
                   </button>
                 </Link>
-                <Link to="/logout">
+                <Link to={`${user.role === "admin" ? "/admin/dashboard" : "dashboard"}`}>
                   <button className="flex items-center gap-2 justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow transition">
-                    <FiCheckCircle /> Logout
+                    <FiUser /> Dashboard
                   </button>
                 </Link>
               </div>
@@ -90,7 +112,7 @@ export default function ProfilePage() {
                 <p className="text-gray-500 text-sm">Joined On</p>
                 <p className="font-semibold text-gray-800">{new Date(user.createdAt).toLocaleDateString()}</p>
               </div>
-             
+
             </div>
           </div>
         </div>

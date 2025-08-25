@@ -58,11 +58,11 @@ const ContactSection = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid  md:grid-cols-2 gap-12">
           {/* Contact Form */}
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col gap-6 bg-mint-50 p-8 rounded-xl shadow-lg"
+            className="flex w-[80%] sm:w-full flex-col  gap-6 bg-mint-50 p-8 rounded-xl shadow-lg"
           >
             {/* Name */}
             <div className="flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-mint-500">
@@ -120,7 +120,7 @@ const ContactSection = () => {
           </form>
 
           {/* Google Map */}
-          <div className="w-full h-80 md:h-full rounded-xl overflow-hidden shadow-lg">
+          <div className="w-[80%] sm:w-full h-80 md:h-full rounded-xl overflow-hidden shadow-lg">
             <iframe
               title="Gilgit Location"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27423.424385123896!2d74.311927!3d35.920547!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38c108f7e63b4cb1%3A0x4fda9f8eb37863ef!2sGilgit%2C%20Gilgit-Baltistan!5e0!3m2!1sen!2s!4v1692123123456!5m2!1sen!2s"

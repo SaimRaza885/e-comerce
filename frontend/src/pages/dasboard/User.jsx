@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import { FiHome, FiShoppingCart, FiUser, FiLock, FiLogOut } from "react-icons/fi"
 
@@ -8,9 +8,14 @@ const User = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchOrders();
+    if (!localStorage.getItem("accessToken")) {
+      navigate("/login")
+    }
+
   }, []);
 
   const fetchOrders = async () => {
@@ -49,6 +54,7 @@ const User = () => {
   };
 
   if (loading) return <p className="text-center mt-10">Loading orders...</p>;
+
 
   return (
     <>
@@ -195,8 +201,8 @@ const User = () => {
                           onClick={() => handleDelete(order._id)}
                           disabled={deleting === order._id}
                           className={`px-4 py-2 rounded-md text-sm font-medium transition duration-200 ${deleting === order._id
-                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                              : "bg-red-100 text-red-600 hover:bg-red-200"
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-red-100 text-red-600 hover:bg-red-200"
                             }`}
                         >
                           {deleting === order._id ? "Deleting..." : "Delete"}

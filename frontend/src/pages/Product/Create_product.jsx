@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import api from "../../api/axios";
 import { useNavigate } from 'react-router-dom';
+import BackArrow from "../../components/BackArrow"
 
 const CreateProduct = () => {
   const [formData, setFormData] = useState({
@@ -67,6 +68,7 @@ const CreateProduct = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
+      <BackArrow navigateto={-1}/>
       <h2 className="text-2xl font-bold mb-6 text-center">Create New Product</h2>
 
       {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>}

@@ -2,18 +2,13 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
+import BackArrow from "../components/BackArrow";
 
 export default function LogoutButton() {
 
 
     const [loading, setLoading] = useState(false)
     const Navigate = useNavigate()
-    useEffect(() => {
-
-        if (!localStorage.getItem("accessToken")) {
-            Navigate("/")
-        }
-    }, [])
     const handleLogout = async () => {
         try {
             setLoading(true)
@@ -30,9 +25,7 @@ export default function LogoutButton() {
     return (
 
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-            <div className="flex items-center w-full justify-center">
-                <Logo />
-            </div>
+         <BackArrow/>
             <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6">
                 <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
                     Logout
