@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 
 // components
@@ -8,6 +8,7 @@ import LoadingSkeleton from "../../components/LoadingSkeleton";
 import AdminProductCard from "../../components/AdminProductCard";
 import AdminProductCardMobile from "../../components/AdminProductCardMobile";
 import BackArrow from "../../components/BackArrow";
+import { useAuth } from "../../context/AuthContext";
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);

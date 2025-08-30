@@ -24,7 +24,8 @@ export const createProduct = asyncHandler(async (req, res) => {
   const uploadedImages = [];
 
   for (const file of req.files) {
-    const result = await Cloudinary_File_Upload(file.path);
+    const result = await Cloudinary_File_Upload(file.buffer);
+
     if (!result?.secure_url) {
       throw new ApiError(500, "Failed to upload image to Cloudinary");
     }
@@ -163,13 +164,13 @@ export const updateProductImages = asyncHandler(async (req, res) => {
 
 
 
-export const  SeachProduct = asyncHandler(async (req, res) => {
+export const SeachProduct = asyncHandler(async (req, res) => {
 
   const query = req.query.q || "";
   const products = await Product.find({
     title: { $regex: query, $options: "i" }  // case-insensitive
   });
 
-  return res.status(200).json(new ApiResponse(201,products,"Find the seached prodct"))
+  return res.status(200).json(new ApiResponse(201, products, "Find the seached prodct"))
 
 });

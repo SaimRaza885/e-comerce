@@ -1,20 +1,27 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios"; // axios instance
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, data } from "react-router-dom";
 import Logo from "../components/Logo";
 import BackArrow from "../components/BackArrow";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  const { login } = useAuth();
   const navigate = useNavigate();
+
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-
+  // useEffect(() => {
+  //   if (localStorage.getItem("accessToken")) {
+  //     navigate("/admin")
+  //   }
+  // }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,9 +35,13 @@ export default function Login() {
       });
 
       // ✅ Save token in localStorage
-      localStorage.setItem("accessToken", res.data.data.accessToken);
+      const token = res.data.data.accessToken;
+      // ✅ Call context login
+      login(res.data.data.user, token); // ⬅️ user object + token
 
+      // localStorage.setItem("accessToken", token);
       setMessage(res.data.message || "Login successful!");
+      console.log(res.data.data)
 
       // Redirect after login
       navigate("/account/profile");

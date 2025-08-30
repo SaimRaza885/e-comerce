@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import api from "../../api/axios";
 import { useNavigate } from 'react-router-dom';
 import BackArrow from "../../components/BackArrow"
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const CreateProduct = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ const CreateProduct = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate =useNavigate()
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -29,13 +30,15 @@ const CreateProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); setSuccess(''); setLoading(true);
+    setError(''); setSuccess('');
+     setLoading(true);
 
     if (!formData.title || !formData.urdu_name || !formData.price || !formData.stock)
       return setError('Title, Urdu name, price, and stock are required');
     if (!images.length) return setError('At least one image is required');
 
     try {
+
       const data = new FormData();
       Object.entries(formData).forEach(([key, val]) => data.append(key, val));
       images.forEach(img => data.append('images', img));
@@ -61,21 +64,21 @@ const CreateProduct = () => {
   const inputs = [
     { label: 'Title', name: 'title', type: 'text', required: true },
     { label: 'Urdu Name', name: 'urdu_name', type: 'text', required: true },
-    { label: 'Description', name: 'description', type: 'textarea', rows: 4 },
-    { label: 'Price', name: 'price', type: 'number', min: 0, step: 0.01, required: true },
+    { label: 'Description', name: 'description', type: 'textarea', rows: 4, required: true },
+    { label: 'Price', name: 'price', type: 'number', min: 0, step: 0.01, required: true, placeholder: "Enter the price per Kg" },
     { label: 'Stock Quantity', name: 'stock', type: 'number', min: 0, required: true }
   ];
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
-      <BackArrow navigateto={-1}/>
+      <BackArrow navigateto={-1} />
       <h2 className="text-2xl font-bold mb-6 text-center">Create New Product</h2>
 
       {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>}
       {success && <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">{success}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {inputs.map(({ label, name, type, ...rest }) => (
+        {inputs.map(({ label, name, type, placeholder, ...rest }) => (
           <div key={name}>
             <label className="block text-sm font-medium text-gray-700">{label}</label>
             {type === 'textarea' ? (
@@ -86,7 +89,7 @@ const CreateProduct = () => {
               />
             ) : (
               <input
-                type={type} name={name} value={formData[name]} onChange={handleChange}
+                type={type} name={name} value={formData[name]} onChange={handleChange} placeholder={placeholder ? placeholder : ""}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 {...rest}
               />
@@ -95,29 +98,49 @@ const CreateProduct = () => {
         ))}
 
         <div className="flex items-center">
-          <input type="checkbox" name="inStock" checked={formData.inStock} onChange={handleChange} className="h-4 w-4 text-indigo-600 border-gray-300 rounded"/>
+          <input type="checkbox" name="inStock" checked={formData.inStock} onChange={handleChange} className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
           <span className="ml-2 text-sm text-gray-700">In Stock</span>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Upload Images (Max 4)</label>
           <input type="file" accept="image/*" multiple onChange={handleImageChange}
-            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
+            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
           <div className="mt-2 flex flex-wrap gap-2">
             {images.map((img, i) => (
               <div key={i} className="relative">
-                <img src={URL.createObjectURL(img)} alt="" className="h-24 w-24 object-cover rounded"/>
+                <img src={URL.createObjectURL(img)} alt="" className="h-24 w-24 object-cover rounded" />
                 <button type="button" onClick={() => removeImage(i)}
                   className="absolute top-0 right-0 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center">&times;</button>
               </div>
             ))}
           </div>
         </div>
-
+        {/* 
         <button type="submit" disabled={loading}
           className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           {loading ? "Creating..." : "Create Product"}
+        </button> */}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className={`
+    w-full py-2 px-4 rounded-md font-medium flex items-center justify-center
+    text-white bg-indigo-600
+    hover:bg-indigo-700
+    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+    transition-all duration-200 ease-in-out
+    shadow-sm hover:shadow-md
+    disabled:opacity-50 disabled:cursor-not-allowed
+  `}
+        >
+          {loading && (
+            <AiOutlineLoading3Quarters className="animate-spin h-4 w-4 mr-2" />
+          )}
+          {loading ? "Creating..." : "Create Product"}
         </button>
+
       </form>
     </div>
   );

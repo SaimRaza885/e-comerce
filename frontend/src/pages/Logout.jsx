@@ -3,18 +3,21 @@ import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import BackArrow from "../components/BackArrow";
+import { useAuth } from "../context/AuthContext";
 
 export default function LogoutButton() {
 
 
     const [loading, setLoading] = useState(false)
     const Navigate = useNavigate()
+
+    const { logout } = useAuth();
+
     const handleLogout = async () => {
         try {
             setLoading(true)
             await api.post("/user/logout", {}, { withCredentials: true }); // call backend logout
-            localStorage.removeItem("accessToken"); // clear local storage token
-            localStorage.removeItem("cart")
+            logout() // clear local storage token and cart
             setLoading(false)
             Navigate("/")
         } catch (err) {

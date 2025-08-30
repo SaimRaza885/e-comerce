@@ -1,48 +1,34 @@
 import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
+import streamifier from "streamifier";
 
 cloudinary.config({
   cloud_name: "dwhudpkbq",
   api_key: "771867698816852",
-  api_secret: "woSyf7VPuLVhfD0PHW4BgpJ37wA", 
+  api_secret: "woSyf7VPuLVhfD0PHW4BgpJ37wA",
 });
 
-
-const Cloudinary_File_Upload = async (FilePath) => {
-  try {
-    if (!FilePath) return null;
-
-    const uploadResult = await cloudinary.uploader.upload(FilePath, {
-      resource_type: "auto",
-    });
-
-    return uploadResult;
-  } catch (error) {
-    console.error("Cloudinary Upload Error:", error);
-    return null;
-  } finally {
-    try {
-      if (fs.existsSync(FilePath)) {
-        fs.unlinkSync(FilePath); // Clean up temp file safely
+const Cloudinary_File_Upload = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { resource_type: "image" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
       }
-    } catch (unlinkError) {
-      console.error("File cleanup failed:", unlinkError);
-    }
-  }
+    );
+
+    streamifier.createReadStream(fileBuffer).pipe(uploadStream);
+  });
 };
 
 const deleteOnCloudinary = async (public_id, resource_type = "image") => {
   try {
     if (!public_id) return null;
-
-    const result = await cloudinary.uploader.destroy(public_id, { resource_type :`${resource_type}` });
-    return result;
+    return await cloudinary.uploader.destroy(public_id, { resource_type });
   } catch (error) {
-    console.log("Delete on Cloudinary failed:", error);
+    console.error("Delete on Cloudinary failed:", error);
     return error;
   }
 };
 
-
-
-export { Cloudinary_File_Upload ,deleteOnCloudinary };
+export { Cloudinary_File_Upload, deleteOnCloudinary };
