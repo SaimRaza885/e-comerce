@@ -60,7 +60,7 @@ const Checkout = () => {
         <div className="min-h-screen bg-gray-50 py-16 px-4">
             <div className="flex items-center justify-center w-full mb-5 !text-7xl">
 
-                <Logo size={30}/>
+                <Logo size={30} />
             </div>
             <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10">
                 {/* Shipping Form */}
@@ -152,14 +152,18 @@ const Checkout = () => {
 
                                 <FaTruck />  <span>Shipping Fee:</span>
                             </div>
-                            <span>{shippingFee} PKR</span>
+                            <span class="flex items-center space-x-2 text-sm">
+                                <del class="text-gray-400">{shippingFee} PKR</del>
+                                <span class="text-green-600 font-semibold">Free</span>
+                            </span>
+
                         </div>
                     </div>
 
                     {/* Total Price Section */}
                     <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between font-bold text-gray-900 text-xl">
                         <span>Total:</span>
-                        <span>{totalPrice + shippingFee} PKR</span>
+                        <span>{totalPrice} PKR</span>
                     </div>
                 </div>
             </div>
