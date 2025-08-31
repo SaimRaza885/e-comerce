@@ -5,10 +5,9 @@ import api from "../../api/axios";
 // components
 import DashboardHeader from "../../components/DashboardHeader";
 import LoadingSkeleton from "../../components/LoadingSkeleton";
-import AdminProductCard from "../../components/AdminProductCard";
+import AdminProductCard from "../../components/ADminProductCard";
 import AdminProductCardMobile from "../../components/AdminProductCardMobile";
 import BackArrow from "../../components/BackArrow";
-import { useAuth } from "../../context/AuthContext";
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
