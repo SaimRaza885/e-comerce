@@ -19,7 +19,7 @@ const CreateProduct = lazy(() => import("./pages/Product/Create_product"));
 const AdminDashboard = lazy(() => import("./pages/dasboard/Admin"));
 const ProductImagesUpdate = lazy(() => import("./pages/Product/Update_product_images"));
 const Create_order = lazy(() => import("./pages/order/Order_Create"));
-const Cart = lazy(() => import("./pages/Cart/Cart.jsx"));
+const Cart = lazy(() => import("./pages/Cart/Cart"));
 const Dashboard = lazy(() => import("./pages/dasboard/User"));
 const SearchPage = lazy(() => import("./pages/Search_Page"));
 const AllOrders = lazy(() => import("./pages/order/All_Orders"));
