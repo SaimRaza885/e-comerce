@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api/v1": {
-        target: "https://backenddryfruits-production.up.railway.app/", // Your backend dev server
+        target: "https://backenddryfruits-production.up.railway.app", // Your backend dev server
         changeOrigin: true,
       },
     },
