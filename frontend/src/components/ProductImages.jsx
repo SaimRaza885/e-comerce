@@ -36,6 +36,7 @@ const ProductImages = ({ images }) => {
           alt="Product"
           className="w-full h-full object-cover rounded-lg"
           onError={(e) => (e.target.src = "/images/placeholder.png")}
+          loading="lazy"
         />
 
         {/* Zoom Lens */}
@@ -72,6 +73,7 @@ const ProductImages = ({ images }) => {
               alt={`Thumbnail ${i + 1}`}
               className="w-full h-full object-cover"
               onError={(e) => (e.target.src = "/images/placeholder.png")}
+              loading="lazy"
             />
           </div>
         ))}

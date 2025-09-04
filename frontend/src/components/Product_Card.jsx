@@ -64,6 +64,7 @@ const ProductCard = ({ product, search = false }) => {
           alt={product.title}
           className="w-full h-full object-cover"
           onError={(e) => (e.target.src = "/images/placeholder.png")}
+          loading="lazy"
         />
       </div>
 
@@ -77,7 +78,7 @@ const ProductCard = ({ product, search = false }) => {
       {!search && (
         <>
           <p
-            className={`text-sm font-medium mb-2 ${product.inStock ? "text-green-600" : "text-red-600"
+            className={`text-sm font-medium mb-2 ${product.inStock ? "text-green-700" : "text-red-700"
               }`}
           >
             {product.inStock ? "In Stock" : "Out of Stock"}
@@ -87,7 +88,7 @@ const ProductCard = ({ product, search = false }) => {
           <div className="flex gap-2 mt-2">
             <Link
               to={`/product/${product._id}`}
-              className="text-sm px-4 py-2 rounded-full border border-yellow-500 text-yellow-600 hover:bg-yellow-50 transition"
+              className="text-sm px-4 py-2 rounded-full border border-yellow-500 text-yellow-700 hover:bg-yellow-50 transition"
             >
               View
             </Link>
@@ -95,7 +96,8 @@ const ProductCard = ({ product, search = false }) => {
               href={`https://wa.me/923001234567?text=Hi! I want to order ${product.title}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded-full shadow-md transition"
+              aria-label="Buy on WhatsApp"
+              className="inline-flex items-center gap-1 bg-yellow-500 hover:bg-yellow-700 text-white text-sm px-4 py-2 rounded-full shadow-md transition"
             >
               <FiShoppingCart /> Buy
             </a>

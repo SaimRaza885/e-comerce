@@ -63,13 +63,13 @@ export default function Navbar({ search = false }) {
         <div className="hidden md:flex items-center gap-6">
           {/* Search */}
           {!search && (
-            <Link to="/search" className="p-2 hover:text-accent rounded-full">
+            <Link to="/search" className="p-2 hover:text-accent rounded-full"  aria-label="Search">
               <Search className="w-6 h-6" />
             </Link>
           )}
 
           {/* Cart */}
-          <Link to="/cart" className="relative hover:text-accent">
+          <Link to="/cart" className="relative hover:text-accent"  aria-label="Cart">
             <FiShoppingCart size={24} />
             {totalItems > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -88,18 +88,19 @@ export default function Navbar({ search = false }) {
               onClick={() => user && setShowDropdown(!showDropdown)}
             />
             {!user && (
-              <Link to="/login" className="absolute top-0 left-0 w-full h-full"></Link>
+              <Link to="/login" className="absolute top-0 left-0 w-full h-full"  aria-label="Login"></Link>
             )}
             {user && showDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg z-50">
                 <Link
                   to={`${user.role === "admin" ? "/admin/dashboard" : "/dashboard"}`}
                   className="block px-4 py-2 hover:bg-gray-100"
+                   aria-label="Dashboard"
                 >
                   Dashboard
                 </Link>
-                <Link to="/account/profile" className="block px-4 py-2 hover:bg-gray-100">Profile</Link>
-                <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100">Logout</Link>
+                <Link to="/account/profile" className="block px-4 py-2 hover:bg-gray-100"  aria-label="profile">Profile</Link>
+                <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100"  aria-label="logout">Logout</Link>
               </div>
             )}
           </div>
