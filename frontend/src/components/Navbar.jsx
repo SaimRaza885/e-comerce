@@ -23,7 +23,6 @@ export default function Navbar({ search = false }) {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-
   }, []);
 
   // Close dropdown if clicked outside (desktop only)
@@ -42,9 +41,8 @@ export default function Navbar({ search = false }) {
 
   return (
     <nav
-      className={`w-full z-50 transition-all duration-300 ${
-        search ? "!bg-black !text-white static" : "fixed top-0"
-      } ${scrolled ? "bg-white shadow-md text-black" : "bg-transparent text-white"}`}
+      className={`w-full z-50 transition-all duration-300 ${search ? "!bg-black !text-white static" : "fixed top-0"
+        } ${scrolled ? "bg-white shadow-md text-black" : "bg-transparent text-white"}`}
     >
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-16">
         {/* Logo */}
@@ -63,13 +61,13 @@ export default function Navbar({ search = false }) {
         <div className="hidden md:flex items-center gap-6">
           {/* Search */}
           {!search && (
-            <Link to="/search" className="p-2 hover:text-accent rounded-full"  aria-label="Search">
+            <Link to="/search" className="p-2 hover:text-accent rounded-full" aria-label="Search">
               <Search className="w-6 h-6" />
             </Link>
           )}
 
           {/* Cart */}
-          <Link to="/cart" className="relative hover:text-accent"  aria-label="Cart">
+          <Link to="/cart" className="relative hover:text-accent" aria-label="Cart">
             <FiShoppingCart size={24} />
             {totalItems > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -82,25 +80,24 @@ export default function Navbar({ search = false }) {
           <div className="relative" ref={desktopDropdownRef}>
             <FiUser
               size={22}
-              className={`cursor-pointer hover:text-accent ${
-                scrolled ? "text-black" : "text-white"
-              }`}
+              className={`cursor-pointer hover:text-accent ${scrolled ? "text-black" : "text-white"
+                }`}
               onClick={() => user && setShowDropdown(!showDropdown)}
             />
             {!user && (
-              <Link to="/login" className="absolute top-0 left-0 w-full h-full"  aria-label="Login"></Link>
+              <Link to="/login" className="absolute top-0 left-0 w-full h-full" aria-label="Login"></Link>
             )}
             {user && showDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg z-50">
                 <Link
                   to={`${user.role === "admin" ? "/admin/dashboard" : "/dashboard"}`}
                   className="block px-4 py-2 hover:bg-gray-100"
-                   aria-label="Dashboard"
+                  aria-label="Dashboard"
                 >
                   Dashboard
                 </Link>
-                <Link to="/account/profile" className="block px-4 py-2 hover:bg-gray-100"  aria-label="profile">Profile</Link>
-                <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100"  aria-label="logout">Logout</Link>
+                <Link to="/account/profile" className="block px-4 py-2 hover:bg-gray-100" aria-label="profile">Profile</Link>
+                <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100" aria-label="logout">Logout</Link>
               </div>
             )}
           </div>
@@ -167,27 +164,43 @@ export default function Navbar({ search = false }) {
                 <div className="flex flex-col pl-8 text-sm">
                   <Link
                     to={`${user.role === "admin" ? "/admin/dashboard" : "/dashboard"}`}
-                    onClick={() => { setIsOpen(false); setShowDropdown(false); }}
+                    onClick={() => {
+                      setTimeout(() => {
+                        setIsOpen(false);
+                        setShowDropdown(false);
+                      }, 150);
+                    }}
                     className="py-2 hover:bg-gray-100"
                   >
                     Dashboard
                   </Link>
                   <Link
                     to="/account/profile"
-                    onClick={() => { setIsOpen(false); setShowDropdown(false); }}
+                    onClick={() => {
+                      setTimeout(() => {
+                        setIsOpen(false);
+                        setShowDropdown(false);
+                      }, 150);
+                    }}
                     className="py-2 hover:bg-gray-100"
                   >
                     Profile
                   </Link>
                   <Link
                     to="/logout"
-                    onClick={() => { setIsOpen(false); setShowDropdown(false); }}
+                    onClick={() => {
+                      setTimeout(() => {
+                        setIsOpen(false);
+                        setShowDropdown(false);
+                      }, 150);
+                    }}
                     className="py-2 hover:bg-gray-100"
                   >
                     Logout
                   </Link>
                 </div>
               )}
+
             </div>
           </div>
         </div>

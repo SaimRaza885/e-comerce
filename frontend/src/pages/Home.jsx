@@ -17,7 +17,7 @@ const Home = () => {
       
       
       {/* Wrap lazy components in Suspense with a fallback */}
-      <Suspense fallback={<div>Loading Product Section...</div>}>
+      <Suspense fallback={<div>Loading Product Section....</div>}>
         <ProductSection />
       </Suspense>
       
