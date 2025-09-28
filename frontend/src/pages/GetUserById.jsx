@@ -98,11 +98,11 @@ export default function ProfilePage() {
                     <FiLock /> Change Password
                   </button>
                 </Link>
-                <Link to={`${user.role === "admin" ? "/admin/dashboard" : "dashboard"}`}>
-                  <button className="flex items-center gap-2 justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow transition">
-                    <FiUser /> Dashboard
-                  </button>
-                </Link>
+                <Link to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}>
+  <button className="flex items-center gap-2 justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow transition">
+    <FiUser /> Dashboard
+  </button>
+</Link>
               </div>
             </div>
 
