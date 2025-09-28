@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { FiMenu, FiX, FiUser, FiShoppingCart } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { useCart } from "../context/Cart";
 import { Search } from "lucide-react";
@@ -16,6 +16,7 @@ export default function Navbar({ search = false }) {
   const [scrolled, setScrolled] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const desktopDropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   // ✅ Optimized scroll (throttled with requestAnimationFrame)
   useEffect(() => {
@@ -167,36 +168,36 @@ export default function Navbar({ search = false }) {
 
               {user && showDropdown && (
                 <div className="flex flex-col pl-8 text-sm">
-                  <Link
-                    to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
+                  <button
                     onClick={() => {
+                      navigate(user.role === "admin" ? "/admin/dashboard" : "/dashboard");
                       setIsOpen(false);
                       setShowDropdown(false);
                     }}
-                    className="py-2 hover:bg-gray-100"
+                    className="py-2 text-left hover:bg-gray-100"
                   >
                     Dashboard
-                  </Link>
-                  <Link
-                    to="/account/profile"
+                  </button>
+                  <button
                     onClick={() => {
+                      navigate("/account/profile");
                       setIsOpen(false);
                       setShowDropdown(false);
                     }}
-                    className="py-2 hover:bg-gray-100"
+                    className="py-2 text-left hover:bg-gray-100"
                   >
                     Profile
-                  </Link>
-                  <Link
-                    to="/logout"
+                  </button>
+                  <button
                     onClick={() => {
+                      navigate("/logout");
                       setIsOpen(false);
                       setShowDropdown(false);
                     }}
-                    className="py-2 hover:bg-gray-100"
+                    className="py-2 text-left hover:bg-gray-100"
                   >
                     Logout
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
