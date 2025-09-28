@@ -1,7 +1,8 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FiMenu, FiX, FiUser, FiShoppingCart } from "react-icons/fi";
-import { Link, HashLink } from "react-router-hash-link";
+import { Link } from "react-router-dom";
+import { HashLink } from "react-router-hash-link";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useCart } from "../context/Cart";
