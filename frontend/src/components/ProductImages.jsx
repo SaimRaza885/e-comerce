@@ -23,9 +23,9 @@ const ProductImages = ({ images }) => {
 
   return (
     <div className="md:w-1/2">
-      {/* Main Image Container */}
+      {/* Main Image */}
       <div
-        className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden"
+        className="relative w-full h-72 md:h-96 bg-gray-100 rounded-lg overflow-hidden"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         onMouseMove={handleMouseMove}
@@ -59,11 +59,11 @@ const ProductImages = ({ images }) => {
       </div>
 
       {/* Thumbnails */}
-      <div className="flex gap-3 mt-4">
+      <div className="flex flex-wrap gap-3 mt-4">
         {images.map((img, i) => (
           <div
             key={i}
-            className={`w-20 h-20 border rounded-lg overflow-hidden cursor-pointer flex-shrink-0 ${
+            className={`w-14 h-14 md:w-20 md:h-20 border rounded-lg overflow-hidden cursor-pointer flex-shrink-0 ${
               mainImage === img.url ? "border-yellow-500" : "border-gray-200"
             }`}
             onClick={() => setMainImage(img.url)}
