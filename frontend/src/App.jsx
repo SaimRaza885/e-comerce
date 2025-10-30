@@ -3,8 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Loading from "./components/Loading";
 import Layout from "./components/Layout";
 import { useCart } from "./context/Cart";
-import ProtectedRoute from "./components/ProtectedRoute"
-import { useAuth } from "./context/AuthContext";
 const Home = lazy(() => import("./pages/Home"));
 const ProductDetails = lazy(() => import("./pages/ProductDetails"));
 const Shop = lazy(() => import("./pages/Shop"));
@@ -17,7 +15,6 @@ const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const UpdateProduct = lazy(() => import("./pages/Product/Update_product"));
 const CreateProduct = lazy(() => import("./pages/Product/Create_product"));
 const AdminDashboard = lazy(() => import("./pages/dasboard/Admin"));
-const ProductImagesUpdate = lazy(() => import("./pages/Product/Update_product_images"));
 const Create_order = lazy(() => import("./pages/order/Order_Create"));
 const Cart = lazy(() => import("./pages/cart/Cart_page"));
 const Dashboard = lazy(() => import("./pages/dasboard/User"));
@@ -69,7 +66,7 @@ const App = () => {
             <Dashboard />
 
           } />
-          <Route path="/dashboard/my-orders" element={
+          <Route path="/my-orders" element={
 
             <OrdersPage />
 
@@ -93,11 +90,7 @@ const App = () => {
             <AdminDashboard />
 
           } />
-          <Route path="product/images/update/:id" element={
-
-            <ProductImagesUpdate />
-
-          } />
+          
           <Route path="admin/dashboard/orders" element={
             <AllOrders />
 

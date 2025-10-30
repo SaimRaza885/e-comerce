@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import api from "../api/axios";
+import PriceTag from "./PriceTag";
 
 const OrderCard = ({ order, onDelete }) => {
   const [status, setStatus] = useState(order.status);
@@ -60,7 +61,7 @@ const OrderCard = ({ order, onDelete }) => {
     {/* Customer Info */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-sm text-gray-600">
       <p><span className="font-medium">Total:</span> {order.totalPrice} PKR</p>
-      <p><span className="font-medium">Customer:</span> {order.user?.fullName || "N/A"} ({order.user?.email || "N/A"})</p>
+      <p><span className="font-medium">Customer:</span> {order.Name || "N/A"} </p>
       <p><span className="font-medium">Address:</span> {order.street}, {order.city}, {order.country}</p>
       <p><span className="font-medium">Phone:</span> {order.phone}</p>
     </div>
@@ -79,7 +80,7 @@ const OrderCard = ({ order, onDelete }) => {
     {/* Footer */}
     <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
       <span>Placed on: {new Date(order.createdAt).toLocaleDateString()}</span>
-      <span className="font-semibold">Total: {order.totalPrice} PKR</span>
+      <PriceTag price={order.totalPrice} size="lg"/>
     </div>
   </div>
 );

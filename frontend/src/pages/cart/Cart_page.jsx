@@ -6,19 +6,13 @@ import Small_Banner from "../../components/Small_Banner";
 import { Images } from "../../assets/data";
 import { useEffect } from "react";
 import BackArrow from "../../components/BackArrow";
+import PriceTag from "../../components/PriceTag";
 
 const Cart = () => {
     const { cartItems, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
     const navigate = useNavigate();
 
-    useEffect(() => {
-
-        if (!localStorage.getItem("accessToken")) {
-            navigate("/login")
-        }
-
-    }, [])
-
+ 
 
     if (cartItems.length === 0) {
         return (
@@ -58,7 +52,7 @@ const Cart = () => {
                                     <div>
                                         <h2 className="text-lg font-semibold text-gray-800">{item.title}</h2>
                                         <p className="text-gray-500">{item.urdu_name}</p>
-                                        <p className="text-yellow-600 font-bold mt-1">{item.price} PKR / kg</p>
+                                           <PriceTag price={item.price} unit="kg" size="md" />
                                     </div>
 
                                     <div className="flex items-center gap-3 mt-4 md:mt-0">
@@ -79,7 +73,7 @@ const Cart = () => {
                                     </div>
 
                                     <div className="flex flex-col items-end mt-4 md:mt-0 gap-2">
-                                        <span className="font-bold text-lg">{item.price * item.quantity} PKR</span>
+                                         <PriceTag price={item.price * item.quantity}  size="lg" isBlack={true} />
                                         <button
                                             onClick={() => removeFromCart(item._id)}
                                             className="flex items-center gap-1 text-red-500 hover:text-red-700 transition"
@@ -102,7 +96,7 @@ const Cart = () => {
                         <div className="border-t border-gray-200 my-4"></div>
                         <div className="flex justify-between text-xl font-bold text-gray-900 mb-6">
                             <span>Total</span>
-                            <span>{totalPrice} PKR</span>
+                              <PriceTag price={totalPrice}  size="lg" isBlack={true} />
                         </div>
 
 

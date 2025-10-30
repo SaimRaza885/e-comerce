@@ -1,7 +1,6 @@
 import express from "express";
 import {
     createOrder,
-    getUserOrders,
     getAllOrders,
     updateOrderStatus,
     Delete_Order, // renamed for consistency
@@ -13,13 +12,11 @@ const router = express.Router();
 // ------------------- User Routes -------------------
 
 // Create a new order
-router.post("/create", verifyJWT("user"), createOrder);
+router.post("/create", createOrder);
 
-// Get orders of logged-in user
-router.get("/my-orders", verifyJWT("user"), getUserOrders);
 
 // Delete/cancel an order (only by owner)
-router.delete("/delete/:id", verifyJWT(), Delete_Order);
+router.delete("/delete/:id", verifyJWT("admin"), Delete_Order);
 
 // ------------------- Admin Routes -------------------
 

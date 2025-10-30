@@ -1,45 +1,46 @@
-import { createContext, useContext, useState, useEffect } from "react";
+// src/context/Cart.js
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
-// Create Context
 const CartContext = createContext();
 
 // Hook for easy access
 export const useCart = () => useContext(CartContext);
 
-// Provider Component
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
-    // Load from localStorage if available
     const savedCart = localStorage.getItem("cart");
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
-  // Persist cart in localStorage
+  // Save cart in localStorage
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Add item to cart
+  // ✅ Add item to cart
   const addToCart = (product, quantity = 1) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item._id === product._id);
       if (existing) {
+        // If product already in cart → update quantity
         return prev.map((item) =>
           item._id === product._id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
+      } else {
+        // Add new product
+        return [...prev, { ...product, quantity }];
       }
-      return [...prev, { ...product, quantity }];
     });
   };
 
-  // Remove item from cart
+  // ✅ Remove an item
   const removeFromCart = (productId) => {
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
   };
 
-  // Update quantity
+  // ✅ Update quantity manually
   const updateQuantity = (productId, quantity) => {
     setCartItems((prev) =>
       prev.map((item) =>
@@ -48,13 +49,22 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // Clear cart
+  // ✅ Clear all items
   const clearCart = () => setCartItems([]);
 
-  // Calculate total price
-  const totalPrice = cartItems.reduce(
-    (acc, item) => acc + item.price * (item.quantity || 1),
-    0
+  // ✅ Derived values (auto-calculated)
+  const totalPrice = useMemo(
+    () =>
+      cartItems.reduce(
+        (acc, item) => acc + (item.price || 0) * (item.quantity || 1),
+        0
+      ),
+    [cartItems]
+  );
+
+  const totalItems = useMemo(
+    () => cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0),
+    [cartItems]
   );
 
   return (
@@ -66,6 +76,7 @@ export const CartProvider = ({ children }) => {
         updateQuantity,
         clearCart,
         totalPrice,
+        totalItems, // 👈 use this for navbar badge
       }}
     >
       {children}

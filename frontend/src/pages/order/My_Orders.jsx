@@ -1,219 +1,90 @@
-import { useEffect, useState } from "react";
-import api from "../../api/axios";
-import { Link, NavLink } from "react-router-dom";
-import Navbar from "../../components/Navbar";
-import Small_Banner from "../../components/Small_Banner";
-import { Images } from "../../assets/data";
+import React, { useEffect, useState } from "react";
 
-const OrdersPage = () => {
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [deleting, setDeleting] = useState(null);
+const MyOrders = () => {
+  const [orders, setOrders] = useState(() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem("orders") || "[]");
+    return Array.isArray(saved) ? saved : [saved];
+  } catch (err) {
+    console.error("Error parsing localStorage orders:", err);
+    return [];
+  }
+});
 
-    useEffect(() => {
-        fetchOrders();
-    }, []);
-
-    const fetchOrders = async () => {
-        try {
-            const { data } = await api.get("order/my-orders", {
-                withCredentials: true,
-            });
-            setOrders(data.data || []);
-        } catch (err) {
-            console.error("Error fetching orders:", err);
-        } finally {
-            setLoading(false);
-        }
+    // 🪄 Also reload if localStorage changes in same tab
+    const handleStorageChange = (e) => {
+      if (e.key === "orders") loadOrders();
     };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
-    const statusClasses = {
-        delivered: "bg-green-100 text-green-800",
-        pending: "bg-yellow-100 text-yellow-800",
-        shipped: "bg-blue-100 text-blue-800",
-        canceled: "bg-red-100 text-red-800",
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this order?")) return;
-
-        setDeleting(id);
-        try {
-            await api.delete(`/order/delete/${id}`, { withCredentials: true });
-            setOrders((prev) => prev.filter((order) => order._id !== id));
-        } catch (err) {
-            console.error("Error deleting order:", err);
-            alert("Failed to delete order. Try again.");
-        } finally {
-            setDeleting(null);
-        }
-    };
-
-    if (loading) return <p className="text-center mt-10">Loading orders...</p>;
-
+  if (orders.length === 0)
     return (
-        <>
-            <Navbar />
-            <Small_Banner
-                title={"My Orders"}
-                subtitle={"All your past and current orders in one place."}
-                bgImage={Images.order_Image}
-            />
-
-            <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-                {/* Sidebar */}
-                <aside className="w-full md:w-64 bg-white shadow-md p-6">
-                    <h2 className="text-2xl font-bold mb-6">My Account</h2>
-                    <nav className="flex flex-col space-y-2">
-                        <NavLink
-                            to="/dashboard"
-                            className={({ isActive }) =>
-                                `px-4 py-2 rounded hover:bg-gray-200 ${isActive ? "bg-gray-200 font-semibold" : ""
-                                }`
-                            }
-                        >
-                            Overview
-                        </NavLink>
-                        <NavLink
-                            to="/dashboard/orders"
-                            className={({ isActive }) =>
-                                `px-4 py-2 rounded hover:bg-gray-200 ${isActive ? "bg-gray-200 font-semibold" : ""
-                                }`
-                            }
-                        >
-                            Orders
-                        </NavLink>
-                        <NavLink
-                            to="/account/profile"
-                            className={({ isActive }) =>
-                                `px-4 py-2 rounded hover:bg-gray-200 ${isActive ? "bg-gray-200 font-semibold" : ""
-                                }`
-                            }
-                        >
-                            Profile
-                        </NavLink>
-                        <NavLink
-                            to="/account/change-password"
-                            className={({ isActive }) =>
-                                `px-4 py-2 rounded hover:bg-gray-200 ${isActive ? "bg-gray-200 font-semibold" : ""
-                                }`
-                            }
-                        >
-                            Change Password
-                        </NavLink>
-                        <Link
-                            to="/logout"
-                            className="px-4 py-2 rounded hover:bg-gray-200 text-red-500"
-                        >
-                            Logout
-                        </Link>
-                    </nav>
-                </aside>
-
-                {/* Main Content */}
-                <main className="flex-1 p-6">
-                    {orders.length === 0 ? (
-                        <div className="min-h-[60vh] flex flex-col items-center justify-center bg-gray-50 p-6 rounded-xl shadow-md">
-                            <h2 className="text-4xl font-bold mb-4 text-gray-800">
-                                No Orders Yet
-                            </h2>
-                            <p className="text-gray-500 mb-6">
-                                Looks like you haven’t ordered anything yet.
-                            </p>
-                            <Link
-                                to="/products/all"
-                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-full shadow-md transition"
-                            >
-                                Go to Shop
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-                            {orders.map((order) => {
-                                const orderTotal = order.items.reduce(
-                                    (acc, item) => acc + item.quantity * item.product.price,
-                                    0
-                                );
-
-                                return (
-                                    <div
-                                        key={order._id}
-                                        className="bg-white shadow-lg rounded-2xl p-6  hover:shadow-2xl transition duration-300 flex flex-col sm:flex-col md:flex-col lg:flex-col"
-                                    >
-
-                                        {/* Order Header */}
-                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                                            <h2 className="text-lg font-semibold text-gray-800">
-                                                Order #{order._id.slice(-6)}
-                                            </h2>
-
-                                            {/* Delete Button */}
-                                            <button
-                                                onClick={() => handleDelete(order._id)}
-                                                disabled={deleting === order._id}
-                                                className={`  p-2 rounded-md font-medium text-sm transition ${deleting === order._id
-                                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                                    : "bg-red-200 text-red-500 hover:text-red-700 cursor-pointer"
-                                                    }`}
-                                            >
-                                                {deleting === order._id ? "Deleting..." : "Delete"}
-                                            </button>
-
-                                            <span
-                                                className={`px-4 py-1 rounded-full text-xs font-medium ${statusClasses[order.status.toLowerCase()] || "bg-gray-100 text-gray-800"
-                                                    }`}
-                                            >
-                                                {order.status}
-                                            </span>
-                                        </div>
-
-                                        {/* Items */}
-                                        <div className="divide-y divide-gray-200">
-                                            {order.items.map((item, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className="flex flex-col sm:flex-row items-center sm:items-start gap-4 py-3"
-                                                >
-                                                    <img
-                                                        src={item.product.images[0].url}
-                                                        alt={item.product.title}
-                                                        className="w-20 h-20 object-cover rounded-lg border flex-shrink-0"
-                                                    />
-                                                    <div className="flex-1">
-                                                        <p className="font-medium text-gray-800">{item.product.title}</p>
-                                                        <p className="text-sm text-gray-500">
-                                                            {item.quantity} × {item.product.price} PKR
-                                                        </p>
-                                                    </div>
-                                                    <p className="font-semibold text-gray-800 mt-2 sm:mt-0">
-                                                        {item.quantity * item.product.price} PKR
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Footer */}
-                                        <div className="mt-5 flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm text-gray-600 border-t pt-4 gap-2">
-                                            <span>
-                                                Placed on:{" "}
-                                                <span className="font-medium text-gray-800">
-                                                    {new Date(order.createdAt).toLocaleDateString()}
-                                                </span>
-                                            </span>
-                                            <span className="font-bold text-gray-900 text-lg">
-                                                Total: {orderTotal} PKR
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                );
-                            })}
-                        </div>
-                    )}
-                </main>
-            </div>
-        </>
+      <div className="text-center py-20 text-gray-500">
+        🛒 No orders yet — place your first order!
+      </div>
     );
+
+  return (
+    <div className="max-w-5xl mx-auto py-10">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">My Orders</h2>
+      <div className="space-y-6">
+        {orders.map((order) => (
+          <div
+            key={order.id}
+            className="border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition"
+          >
+            <div className="flex justify-between mb-3">
+              <h3 className="font-semibold text-lg text-gray-800">
+                Order #{order.id}
+              </h3>
+              <span
+                className={`text-sm px-3 py-1 rounded-full ${
+                  order.status === "Delivered"
+                    ? "bg-green-100 text-green-600"
+                    : "bg-yellow-100 text-yellow-600"
+                }`}
+              >
+                {order.status || "Pending"}
+              </span>
+            </div>
+
+            <p className="text-sm text-gray-500 mb-2">
+              📅{" "}
+              {order.date
+                ? new Date(order.date).toLocaleString()
+                : "Date not available"}
+            </p>
+
+            <div className="divide-y divide-gray-200 mt-4">
+              {order.items?.map((item) => (
+                <div
+                  key={item._id}
+                  className="flex justify-between items-center py-3"
+                >
+                  <div>
+                    <p className="text-gray-800 font-medium">{item.title}</p>
+                    <p className="text-gray-500 text-sm">
+                      {item.quantity} × Rs.{item.price}
+                    </p>
+                  </div>
+                  <p className="font-semibold text-gray-800">
+                    Rs.{item.price * item.quantity}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-between mt-4 text-gray-700 font-semibold">
+              <span>Total:</span>
+              <span>Rs.{order.totalPrice?.toLocaleString()}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-export default OrdersPage;
+export default MyOrders;

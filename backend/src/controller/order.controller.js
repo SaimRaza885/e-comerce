@@ -4,11 +4,11 @@ import { ApiError } from "../utils/Api_Error.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// 🟢 Create Order
-export const createOrder = asyncHandler(async (req, res) => {
-  const { phone, country, city, street, items } = req.body;
 
-  if (!phone || !country || !city || !street || !items || items.length === 0) {
+export const createOrder = asyncHandler(async (req, res) => {
+  const { Name,phone, country, city, street, items } = req.body;
+
+  if (!phone || !country || !Name || !city || !street || !items || items.length === 0) {
     throw new ApiError(400, "All fields and at least one item are required");
   }
 
@@ -21,13 +21,13 @@ export const createOrder = asyncHandler(async (req, res) => {
   }
 
   const order = await Order.create({
-    user: req.user?._id , // if user is logged in
     phone,
     country,
     city,
     street,
     items,
     totalPrice,
+    Name
   });
 
   return res
@@ -35,22 +35,10 @@ export const createOrder = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, order, "Order created successfully"));
 });
 
-// 🟡 Get all orders of a single user
-export const getUserOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id })
-    .populate("items.product", "title price images")
-    .sort({ createdAt: -1 });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, orders, "User orders fetched successfully"));
-});
-
-// 🔵 Get all orders for admin
 export const getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find()
-    .populate("user", "fullName email")
-    .populate("items.product", "title price images")
+    .populate("items.product", "title price images") // populate product info
     .sort({ createdAt: -1 });
 
   return res
@@ -58,7 +46,6 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, orders, "All orders fetched successfully"));
 });
 
-// 🟣 Update order status (admin only)
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;

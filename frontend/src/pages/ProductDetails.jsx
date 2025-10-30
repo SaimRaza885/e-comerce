@@ -5,6 +5,7 @@ import api from "../api/axios";
 import ProductImages from "../components/ProductImages";
 import { useCart } from "../context/Cart";
 import Small_Banner from "../components/Small_Banner";
+import PriceTag from "../components/PriceTag";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -78,7 +79,7 @@ const ProductDetail = () => {
           {product.urdu_name && (
             <p className="text-gray-500 mb-4 text-lg">{product.urdu_name}</p>
           )}
-          <p className="text-2xl font-bold mb-4">{product.price} PKR / kg</p>
+            <PriceTag price={product.price} size="xl"  unit={"kg"} isBlack={true} />
           <p
             className={`text-sm font-medium mb-4 ${
               product.inStock ? "text-green-600" : "text-red-600"
@@ -111,7 +112,7 @@ const ProductDetail = () => {
           <div className="mt-4 p-4 bg-yellow-50 rounded-lg flex items-center justify-between shadow-sm">
             <span className="text-gray-700 font-medium text-lg">Total Price:</span>
             <span className="text-yellow-600 font-bold text-xl">
-              {quantity * product.price} PKR
+             <PriceTag price={product.price * quantity} size="md"  />
             </span>
           </div>
 

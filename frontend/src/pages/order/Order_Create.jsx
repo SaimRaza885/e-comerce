@@ -1,19 +1,26 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { useCart } from "../../context/Cart";
 import { FiMapPin, FiPhone, FiCreditCard } from "react-icons/fi";
 import { FaTruck } from "react-icons/fa"
 import { useNavigate } from "react-router-dom";
-import api from "../../api/axios";
+import api from "../../api/axios"; 
 import Logo from "../../components/Logo";
+import PriceTag from "../../components/PriceTag";
 
 const Checkout = () => {
+
+
     const { cartItems, totalPrice, clearCart } = useCart();
+
+    if (cartItems.length === 0) navigate("/cart");
+
     const navigate = useNavigate();
     const [form, setForm] = useState({
         phone: "",
         country: "",
         city: "",
         street: "",
+        Name: "",
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -32,7 +39,7 @@ const Checkout = () => {
         setSuccess("");
         setLoading(true);
         try {
-            if (!form.phone || !form.country || !form.city || !form.street || cartItems.length === 0) {
+            if (!form.phone || !form.Name || !form.country || !form.city || !form.street || cartItems.length === 0) {
                 setError("All fields are required and cart must not be empty.");
                 setLoading(false);
                 return;
@@ -46,14 +53,31 @@ const Checkout = () => {
                 })),
             });
 
+            const newOrder = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                phone: form.phone,
+                country: form.country,
+                city: form.city,
+                street: form.street,
+                items: cartItems,
+                totalPrice: totalPrice,
+            };
+
+            const existing = JSON.parse(localStorage.getItem("orders") || "[]");
+            localStorage.setItem("orders", JSON.stringify([...existing, newOrder]));
+
             setSuccess("Order placed successfully!");
             clearCart();
-            navigate("/dashboard"); // redirect to home or order confirmation page
+            navigate("/my-orders");
         } catch (err) {
             setError(err.response?.data?.message || "Failed to place order");
         } finally {
             setLoading(false);
         }
+
+
+
     };
 
     return (
@@ -77,6 +101,17 @@ const Checkout = () => {
                                 name="phone"
                                 placeholder="Phone Number"
                                 value={form.phone}
+                                onChange={handleChange}
+                                className="w-full outline-none"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2 border rounded px-3 py-2">
+                            <FiPhone className="text-gray-400" />
+                            <input
+                                type="text"
+                                name="Name"
+                                placeholder="Customer Name "
+                                value={form.Name}
                                 onChange={handleChange}
                                 className="w-full outline-none"
                             />
@@ -142,7 +177,8 @@ const Checkout = () => {
                                             {item.quantity} x {item.price} PKR
                                         </p>
                                     </div>
-                                    <p className="font-semibold text-gray-800">{item.quantity * item.price} PKR</p>
+                                    <PriceTag price={item.price * item.quantity} size="md" isBlack={true} />
+
                                 </div>
                             ))}
                         </div>
@@ -162,8 +198,12 @@ const Checkout = () => {
 
                     {/* Total Price Section */}
                     <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between font-bold text-gray-900 text-xl">
-                        <span>Total:</span>
-                        <span>{totalPrice} PKR</span>
+                        <div className="flex items-center justify-between gap-1 w-full">
+
+                            <span>Total:</span>
+
+                            <PriceTag price={totalPrice} size="lg" />
+                        </div>
                     </div>
                 </div>
             </div>

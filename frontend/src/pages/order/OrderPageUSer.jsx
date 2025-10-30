@@ -1,157 +1,114 @@
-import { useEffect, useState } from "react";
-import api from "../../api/axios";
-import { Link } from "react-router-dom";
-import Navbar from "../../components/Navbar";
+import React, { useState, useEffect } from "react";
+import { MapPin, Phone, Calendar, Trash2, Clock } from "lucide-react";
+import BackArrow from "../../components/BackArrow";
 
-const OrdersPage = () => {
+const MyOrders = () => {
     const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [deleting, setDeleting] = useState(null);
 
+    // Load orders from localStorage
     useEffect(() => {
-        fetchOrders();
+        const saved = JSON.parse(localStorage.getItem("orders") || "[]");
+        if (Array.isArray(saved)) {
+            const sorted = [...saved].sort((a, b) => new Date(b.date) - new Date(a.date));
+            setOrders(sorted);
+        }
     }, []);
 
-    const fetchOrders = async () => {
-        try {
-            const { data } = await api.get("order/my-orders", {
-                withCredentials: true,
-            });
-            setOrders(data.data || []);
-        } catch (err) {
-            console.error("Error fetching orders:", err);
-        } finally {
-            setLoading(false);
-        }
+    // Remove an order by ID
+    const handleRemove = (id) => {
+        const updated = orders.filter((order) => order.id !== id);
+        setOrders(updated);
+        localStorage.setItem("orders", JSON.stringify(updated));
     };
-
-    const statusClasses = {
-        delivered: "bg-green-100 text-green-800",
-        pending: "bg-yellow-100 text-yellow-800",
-        shipped: "bg-blue-100 text-blue-800",
-        canceled: "bg-red-100 text-red-800",
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this order?")) return;
-
-        setDeleting(id);
-        try {
-            await api.delete(`/order/delete/${id}`, { withCredentials: true });
-            setOrders((prev) => prev.filter((order) => order._id !== id));
-        } catch (err) {
-            console.error("Error deleting order:", err);
-            alert("Failed to delete order. Try again.");
-        } finally {
-            setDeleting(null);
-        }
-    };
-
-    if (loading) return <p className="text-center mt-10">Loading orders...</p>;
-
-    if (orders.length === 0)
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
-                <h2 className="text-4xl font-bold mb-4 text-gray-800">Order Something Now</h2>
-                <p className="text-gray-500 mb-6">Looks like you haven’t ordered anything yet.</p>
-                <Link
-                    to="/products/all"
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-full shadow-md transition"
-                >
-                    Go to Shop
-                </Link>
-            </div>
-        );
 
     return (
-        <>
-            <Navbar search={true} />
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-8 text-center">
+        <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-8">
+            <BackArrow/>
+            <div className="max-w-4xl mx-auto">
+                <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
                     My Orders
                 </h1>
 
-                <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-                    {orders.map((order) => {
-                        // calculate total per order
-                        const orderTotal = order.items.reduce(
-                            (acc, item) => acc + item.quantity * item.product.price,
-                            0
-                        );
-
-                        return (
+                {/* No Orders */}
+                {orders.length === 0 ? (
+                    <p className="text-center text-gray-500 mt-10">
+                        You haven’t placed any orders yet.
+                    </p>
+                ) : (
+                    <div className="space-y-6 grid  3 gap-5  md:grid-cols-2">
+                        {orders.map((order) => (
                             <div
-                                key={order._id}
-                                className="bg-white shadow-md rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition duration-300 border border-gray-100"
+                                key={order.id}
+                                className="bg-white rounded-2xl shadow-md p-5 hover:shadow-lg transition duration-200"
                             >
                                 {/* Header */}
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-lg font-semibold text-gray-800">
-                                        Order #{order._id.slice(-6)}
-                                    </h2>
-                                    <span
-                                        className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${statusClasses[order.status.toLowerCase()] ||
-                                            "bg-gray-100 text-gray-800"
-                                            }`}
+                                <div className="flex justify-between items-center border-b pb-3 mb-3">
+
+                                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                                        <Clock size={16} className="text-yellow-600" />
+                                        <span>
+                                            {order.date
+                                                ? new Date(order.date).toLocaleString()
+                                                : "No Date Available"}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRemove(order.id)}
+                                        className="flex items-center gap-1 text-red-500 text-sm hover:text-red-600 transition"
                                     >
-                                        {order.status}
-                                    </span>
+                                        <Trash2 size={16} />
+                                        Remove
+                                    </button>
                                 </div>
 
-                                {/* Items List */}
-                                <div className="divide-y divide-gray-200 mb-4">
-                                    {order.items.map((item, idx) => (
-                                        <div key={idx} className="flex items-center gap-4 py-3">
-                                            <img
-                                                src={item.product.images[0].url}
-                                                alt={item.product.title}
-                                                className="w-16 h-16 object-cover rounded border"
-                                            />
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-800">{item.product.title}</p>
-                                                <p className="text-sm text-gray-500">
-                                                    {item.quantity} × {item.product.price} PKR
-                                                </p>
+                                {/* Items */}
+                                <div className="space-y-2 mb-3">
+                                    {order.items?.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex justify-between text-sm text-gray-700 border-b pb-2"
+                                        >
+                                            <span className="font-medium">{item.title}</span>
+                                            <div className="text-right">
+                                                <span className="block">Quantity: {item.quantity}</span>
+                                                <span className="text-gray-500 text-xs">
+                                                    Rs {item.price?.toLocaleString()}
+                                                </span>
                                             </div>
-                                            <p className="font-semibold text-gray-800 text-right">
-                                                {item.quantity * item.product.price} PKR
-                                            </p>
                                         </div>
                                     ))}
                                 </div>
 
-                                {/* Footer */}
-                                <div className="flex justify-between items-center border-t pt-4">
-                                    <div className="text-sm text-gray-600">
-                                        Placed on:{" "}
-                                        <span className="font-medium text-gray-800">
-                                            {new Date(order.createdAt).toLocaleDateString()}
-                                        </span>
+                                {/* Footer Info */}
+                                <div className="flex flex-col sm:flex-row justify-between text-sm text-gray-600 gap-2 mt-4">
+                                    <div className="flex items-center gap-1">
+                                        <Phone size={14} />
+                                        <span>{order.phone}</span>
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-lg font-bold text-gray-900">
-                                            Total: {orderTotal} PKR
+                                    <div className="flex items-center gap-1">
+                                        <MapPin size={14} />
+                                        <span>
+                                            {order.street}, {order.city}, {order.country}
                                         </span>
-                                        <button
-                                            onClick={() => handleDelete(order._id)}
-                                            disabled={deleting === order._id}
-                                            className={`px-4 py-2 rounded-md text-sm font-medium transition duration-200 ${deleting === order._id
-                                                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                                : "bg-red-100 text-red-600 hover:bg-red-200"
-                                                }`}
-                                        >
-                                            {deleting === order._id ? "Deleting..." : "Delete"}
-                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                        );
 
-                    })}
-                </div>
+                                {/* Total */}
+                                <div className="mt-4 text-right">
+                                    <span className="font-semibold text-gray-800">
+                                        Total:{" "}
+                                        <span className="text-yellow-600">
+                                            Rs {order.totalPrice?.toLocaleString()}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
-        </>
+        </div>
     );
 };
 
-export default OrdersPage;
+export default MyOrders;
