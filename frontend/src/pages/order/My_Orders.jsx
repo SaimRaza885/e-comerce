@@ -2,19 +2,31 @@ import React, { useEffect, useState } from "react";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState(() => {
-  try {
-    const saved = JSON.parse(localStorage.getItem("orders") || "[]");
-    return Array.isArray(saved) ? saved : [saved];
-  } catch (err) {
-    console.error("Error parsing localStorage orders:", err);
-    return [];
-  }
-});
+    try {
+      const saved = JSON.parse(localStorage.getItem("orders") || "[]");
+      return Array.isArray(saved) ? saved : [saved];
+    } catch (err) {
+      console.error("Error parsing localStorage orders:", err);
+      return [];
+    }
+  });
 
-    // 🪄 Also reload if localStorage changes in same tab
+  // Helper function to reload orders from localStorage
+  const loadOrders = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("orders") || "[]");
+      setOrders(Array.isArray(saved) ? saved : [saved]);
+    } catch (err) {
+      console.error("Error reloading orders from localStorage:", err);
+    }
+  };
+
+  // 🪄 Reload if localStorage changes (even across tabs)
+  useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "orders") loadOrders();
     };
+
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);

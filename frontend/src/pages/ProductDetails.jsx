@@ -22,6 +22,7 @@ const ProductDetail = () => {
       try {
         const res = await api.get(`/product/${id}`);
         setProduct(res.data.data);
+        console.log(res.data.message);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch product");
       } finally {

@@ -1,6 +1,6 @@
 import { use, useState } from "react";
 import { useCart } from "../../context/Cart";
-import { FiMapPin, FiPhone, FiCreditCard } from "react-icons/fi";
+import { FiMapPin, FiPhone, FiCreditCard, FiUser } from "react-icons/fi";
 import { FaTruck } from "react-icons/fa"
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios"; 
@@ -84,7 +84,7 @@ const Checkout = () => {
         <div className="min-h-screen bg-gray-50 py-16 px-4">
             <div className="flex items-center justify-center w-full mb-5 !text-7xl">
 
-                <Logo size={30} />
+                <Logo size={20} />
             </div>
             <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10">
                 {/* Shipping Form */}
@@ -106,7 +106,7 @@ const Checkout = () => {
                             />
                         </div>
                         <div className="flex items-center gap-2 border rounded px-3 py-2">
-                            <FiPhone className="text-gray-400" />
+                            <FiUser className="text-gray-400" />
                             <input
                                 type="text"
                                 name="Name"

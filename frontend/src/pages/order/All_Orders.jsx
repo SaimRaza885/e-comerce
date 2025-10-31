@@ -33,8 +33,8 @@ const OrdersList = () => {
     fetchOrders();
 
     // Optional: auto-refresh every 10 seconds
-    // const interval = setInterval(fetchOrders, 1000);
-    // return () => clearInterval(interval);
+    const interval = setInterval(fetchOrders, 1800000); // 30 minutes
+    return () => clearInterval(interval);
   }, []);
 
   // Delete order handler

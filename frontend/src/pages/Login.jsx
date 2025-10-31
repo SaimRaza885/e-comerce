@@ -4,12 +4,16 @@ import { useNavigate, Link, data } from "react-router-dom";
 import Logo from "../components/Logo";
 import BackArrow from "../components/BackArrow";
 import { useAuth } from "../context/AuthContext";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+
   const { login } = useAuth();
+  const [statusCode, setStatusCode] = useState(null);
   const navigate = useNavigate();
 
 
@@ -17,11 +21,6 @@ export default function Login() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // useEffect(() => {
-  //   if (localStorage.getItem("accessToken")) {
-  //     navigate("/admin")
-  //   }
-  // }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,12 +40,13 @@ export default function Login() {
 
       // localStorage.setItem("accessToken", token);
       setMessage(res.data.message || "Login successful!");
-      console.log(res.data.data)
+      setStatusCode(res.data.statusCode)
 
       // Redirect after login
       navigate("/account/profile");
     } catch (err) {
-      setMessage(err.response?.data?.message || "Invalid email or password");
+      setMessage(err.message);
+      setStatusCode(err.statusCode || 400);
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export default function Login() {
         </h2>
 
         {message && (
-          <div className="mb-4 text-sm text-center text-red-600">{message}</div>
+          <div className={`mb-4 text-sm text-center ${statusCode > 205 ? "text-red-600" : "text-green-600"} `}>{message}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,15 +74,25 @@ export default function Login() {
             className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
             required
           />
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="Password"
-            className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
-            required
-          />
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className="w-full p-3 pr-10 border rounded-lg focus:ring focus:ring-blue-300"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
 
           <p className="mt-4 text-center text-sm text-gray-600">
             Don't have an account?{" "}
@@ -99,6 +109,6 @@ export default function Login() {
           </button>
         </form>
       </div>
-    </div>
+    </div >
   );
 }
