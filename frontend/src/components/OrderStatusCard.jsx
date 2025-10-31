@@ -6,6 +6,14 @@ const OrderCard = ({ order, onDelete }) => {
   const [status, setStatus] = useState(order.status);
   const [updating, setUpdating] = useState(false);
 
+   const formatTime = (timestamp) => {
+      const time = new Date(timestamp);
+      return time.toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+      });
+    }
   const allowedStatus = ["pending", "shipped", "delivered", "canceled"];
   const statusClasses = {
     delivered: "bg-green-100 text-green-800",
@@ -79,7 +87,12 @@ const OrderCard = ({ order, onDelete }) => {
 
     {/* Footer */}
     <div className="flex justify-between items-center mt-4 text-sm text-gray-500">
+      <div className="flex text-[14px] flex-col">
+
       <span>Placed on: {new Date(order.createdAt).toLocaleDateString()}</span>
+   
+      <span>Time: {formatTime(order.createdAt)}</span>
+      </div>
       <PriceTag price={order.totalPrice} size="lg"/>
     </div>
   </div>

@@ -32,8 +32,7 @@ const OrdersList = () => {
 
     fetchOrders();
 
-    // Optional: auto-refresh every 10 seconds
-    const interval = setInterval(fetchOrders, 1800000); // 30 minutes
+    const interval = setInterval(fetchOrders, 1800000) ; // Refresh every 30 minutes
     return () => clearInterval(interval);
   }, []);
 
