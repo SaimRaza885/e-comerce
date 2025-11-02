@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import AddToCartButton from "./AddToCartButton";
 import PriceTag from "./PriceTag";
+import Animated_Borders from "./Animated_Borders";
 
 const ProductCard = ({ product, search = false }) => {
   const imageUrl = product.images?.[0]?.url || "/images/placeholder.png";
 
   return (
     <div className="product_card group cursor-pointer">
+<Animated_Borders/>
       {/* Product Image */}
       <div className="product_card-img">
         <img
