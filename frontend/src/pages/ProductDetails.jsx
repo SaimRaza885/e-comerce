@@ -54,7 +54,7 @@ const ProductDetail = () => {
 
   return (
     <>
-      <Small_Banner title={product.urdu_name} bgImage={product.images[0].url} subtitle={""} />
+      <Small_Banner is_product={true} title={product.urdu_name} bgImage={product} subtitle={""} />
       <div className="container-section">
         <div className="product-layout">
           <ProductImages images={product.images || []} />
