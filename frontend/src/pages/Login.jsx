@@ -28,17 +28,13 @@ export default function Login() {
     setMessage(null);
 
     try {
-      // ✅ fixed endpoint: /users/login
       const res = await api.post("/user/login", form, {
         withCredentials: true, // send cookies
       });
 
-      // ✅ Save token in localStorage
       const token = res.data.data.accessToken;
-      // ✅ Call context login
-      login(res.data.data.user, token); // ⬅️ user object + token
-
-      // localStorage.setItem("accessToken", token);
+      const loginDate = new Date();
+      login(res.data.data.user, token, loginDate);
       setMessage(res.data.message || "Login successful!");
       setStatusCode(res.data.statusCode)
 

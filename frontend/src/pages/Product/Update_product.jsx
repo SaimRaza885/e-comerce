@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
+import BackArrow from "../../components/BackArrow";
 
 const UpdateProduct = () => {
   const { id } = useParams();
@@ -81,7 +82,7 @@ const UpdateProduct = () => {
       {success && (
         <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">{success}</div>
       )}
-
+<BackArrow/>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Title */}
         <div>

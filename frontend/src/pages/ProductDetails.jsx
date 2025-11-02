@@ -6,6 +6,7 @@ import ProductImages from "../components/ProductImages";
 import { useCart } from "../context/Cart";
 import Small_Banner from "../components/Small_Banner";
 import PriceTag from "../components/PriceTag";
+import Product_Details_SkeletonLoader from "../components/Product_Details_SkeletonLoader";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -42,22 +43,7 @@ const ProductDetail = () => {
     // alert(`${quantity} x ${product.title} added to cart!`);
   };
 
-  if (loading)
-    return (
-      <div className="max-w-6xl mx-auto py-20 px-4">
-        <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="h-96 bg-gray-200 rounded-lg"></div>
-          <div className="space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-40 bg-gray-200 rounded"></div>
-            <div className="h-10 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-10 bg-gray-200 rounded w-1/3"></div>
-          </div>
-        </div>
-      </div>
-    );
+  if (loading) return <Product_Details_SkeletonLoader />
 
   if (error)
     return (
@@ -68,77 +54,55 @@ const ProductDetail = () => {
 
   return (
     <>
-    <Small_Banner title={product.urdu_name}  bgImage={product.images[0].url} subtitle={""}/>
-    <div className="max-w-6xl mx-auto py-16 px-4">
-      <div className="flex flex-col md:flex-row gap-10">
-        {/* Images */}
-        <ProductImages images={product.images || []} />
+      <Small_Banner title={product.urdu_name} bgImage={product.images[0].url} subtitle={""} />
+      <div className="container-section">
+        <div className="product-layout">
+          <ProductImages images={product.images || []} />
 
-        {/* Product Info */}
-        <div className="md:w-1/2 flex flex-col justify-start">
-          <h1 className="text-3xl font-bold mb-2 text-gray-800">{product.title}</h1>
-          {product.urdu_name && (
-            <p className="text-gray-500 mb-4 text-lg">{product.urdu_name}</p>
-          )}
-            <PriceTag price={product.price} size="xl"  unit={"kg"} isBlack={true} />
-          <p
-            className={`text-sm font-medium mb-4 ${
-              product.inStock ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {product.inStock ? "In Stock" : "Out of Stock"}
-          </p>
-          {product.description && (
-            <p className="text-gray-700 mb-6">{product.description}</p>
-          )}
+          <div className="product-info">
+            <h1 className="product-title">{product.title}</h1>
+            {product.urdu_name && <p className="product-subtitle">{product.urdu_name}</p>}
 
-          {/* Quantity Selector */}
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => handleQuantityChange("decrement")}
-              className="p-2 border rounded hover:bg-gray-100 transition"
-            >
-              <FiMinus />
-            </button>
-            <span className="text-lg font-medium">{quantity}</span>
-            <button
-              onClick={() => handleQuantityChange("increment")}
-              className="p-2 border rounded hover:bg-gray-100 transition"
-            >
-              <FiPlus />
-            </button>
-          </div>
+            <PriceTag price={product.price} size="xl" unit="kg" isBlack={true} />
 
-          {/* Total Price */}
-          <div className="mt-4 p-4 bg-yellow-50 rounded-lg flex items-center justify-between shadow-sm">
-            <span className="text-gray-700 font-medium text-lg">Total Price:</span>
-            <span className="text-yellow-600 font-bold text-xl">
-             <PriceTag price={product.price * quantity} size="md"  />
-            </span>
-          </div>
+            <p className={`text-sm font-medium mb-4 ${product.inStock ? "text-green-600" : "text-red-600"}`}>
+              {product.inStock ? "In Stock" : "Out of Stock"}
+            </p>
 
-          {/* Action Buttons */}
-          <div className="flex gap-4 flex-wrap mt-6">
-            <button
-              onClick={handleAddToCart}
-              className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-6 py-3 rounded-full shadow-md transition"
-            >
-              <FiShoppingCart /> Add to Cart
-            </button>
+            {product.description && <p className="product-description">{product.description}</p>}
 
-            <a
-              href={`https://wa.me/923001234567?text=Hi! I want to order ${quantity} x ${product.title}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white text-sm px-6 py-3 rounded-full shadow-md transition"
-            >
-              <FiShoppingCart /> Buy on WhatsApp
-            </a>
+            <div className="flex items-center gap-4 mb-4">
+              <button onClick={() => handleQuantityChange("decrement")} className="qty-btn"><FiMinus /></button>
+              <span className="text-lg font-medium">{quantity}</span>
+              <button onClick={() => handleQuantityChange("increment")} className="qty-btn"><FiPlus /></button>
+            </div>
+
+            <div className="total-box">
+              <span className="text-gray-700 font-medium text-lg">Total Price:</span>
+              <span className="text-yellow-600 font-bold text-xl">
+                <PriceTag price={product.price * quantity} size="md" />
+              </span>
+            </div>
+
+            <div className="action-btns">
+              <button onClick={handleAddToCart} className="btn-cart">
+                <FiShoppingCart /> Add to Cart
+              </button>
+
+              <a
+                href={`https://wa.me/923001234567?text=Hi! I want to order ${quantity} x ${product.title}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-whatsapp"
+              >
+                <FiShoppingCart /> Buy on WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-              </>
+
+    </>
   );
 };
 

@@ -48,8 +48,15 @@ const AdminDashboard = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
-      <BackArrow/>
-      <DashboardHeader/>
+      <BackArrow />
+      <DashboardHeader />
+
+      <div className="flex  items-center justify-between p-2 border border-accent bg-accent/20 my-3 rounded-md">
+
+        <p className="">{localStorage.getItem("date_login")}</p>
+
+       <Link to={"/admin/login"} className="py-2 px-5 border-blue-400 bg-blue-500 text-white">Login Now</Link>
+      </div>
 
       {/* Desktop: Table view */}
       <div className="hidden md:block overflow-x-auto bg-white shadow rounded-lg">

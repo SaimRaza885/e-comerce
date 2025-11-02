@@ -56,9 +56,10 @@ export default function ProfilePage() {
       <Navbar />
       <div className="min-h-screen bg-gray-100">
         {/* Header Section */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 h-48 flex items-center justify-center relative rounded-b-3xl shadow-lg">
+        
+        <div className="profile_gradient">
           <div className="absolute -bottom-16">
-            <div className="w-32 h-32 bg-white text-blue-600 rounded-full flex items-center justify-center text-5xl font-bold shadow-2xl border-4 border-white">
+            <div className="profile_avatar">
               {user.fullName.charAt(0).toUpperCase()}
             </div>
           </div>
@@ -71,13 +72,13 @@ export default function ProfilePage() {
               {/* User Info */}
               <div className="flex-1 text-center sm:text-left">
                 <h1 className="text-3xl font-bold text-gray-800">{user.fullName}</h1>
-                <p className="text-gray-500 mt-1 flex items-center justify-center sm:justify-start gap-2">
+                <p className="profile_mini_info">
                   <FiUser /> Role: {user.role}
                 </p>
-                <p className="text-gray-500 mt-1 flex items-center justify-center sm:justify-start gap-2">
+                <p className="profile_mini_info">
                   <FiMail /> Email: {user.email}
                 </p>
-                <p className="text-gray-500 mt-1 flex items-center justify-center sm:justify-start gap-2">
+                <p className="profile_mini_info">
                   <FiCheckCircle className="text-green-500" /> Status: Active
                 </p>
               </div>
@@ -85,7 +86,7 @@ export default function ProfilePage() {
               {/* Action Buttons */}
               <div className="flex flex-col gap-4 mt-4 sm:mt-0">
 
-                <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 justify-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow transition">
+                <button onClick={() => setModalOpen(true)} className="profile_btn profile_btn_blue">
                   <FiEdit /> Change Name
                 </button>
                 <UpdateFullName
@@ -94,15 +95,15 @@ export default function ProfilePage() {
                   onClose={() => setModalOpen(false)}
                 />
                 <Link to="/account/change-password">
-                  <button className="flex items-center gap-2 justify-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl shadow transition">
+                  <button className="profile_btn profile_btn-yellow">
                     <FiLock /> Change Password
                   </button>
                 </Link>
                 <Link to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}>
-  <button className="flex items-center gap-2 justify-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow transition">
-    <FiUser /> Dashboard
-  </button>
-</Link>
+                  <button className="profile_btn profile_btn-red">
+                    <FiUser /> Dashboard
+                  </button>
+                </Link>
               </div>
             </div>
 

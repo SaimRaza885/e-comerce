@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import api from "../../api/axios";
 import OrderCard from "../../components/OrderStatusCard";
 import BackArrow from "../../components/BackArrow";
@@ -32,8 +32,8 @@ const OrdersList = () => {
 
     fetchOrders();
 
-    const interval = setInterval(fetchOrders, 1800000) ; // Refresh every 30 minutes
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchOrders, 1800000) ; // Refresh every 30 minutes
+    // return () => clearInterval(interval);
   }, []);
 
   // Delete order handler
@@ -198,7 +198,7 @@ const OrdersList = () => {
       </p>
 
       {/* Orders Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-[70vh] pr-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-[100vh] pr-2">
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order, index) => (
             <div

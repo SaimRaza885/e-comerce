@@ -6,7 +6,6 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(localStorage.getItem("accessToken") || null);
-
   // ✅ Fetch profile from backend if token exists
   useEffect(() => {
     const fetchProfile = async () => {
@@ -29,12 +28,19 @@ export const AuthProvider = ({ children }) => {
   }, [accessToken]);
 
   // ✅ Login: store user & token
-  const login = (userData, token) => {
+  const login = (userData, token, loginDate) => {
     localStorage.setItem("accessToken", token);
     setAccessToken(token);
     setUser(userData);
-  };
 
+    // Calculate 30 days later
+    const future = new Date(loginDate);
+    future.setDate(loginDate.getDate() + 30);
+
+    // Create readable message
+    const message = `You logged in on ${loginDate.toLocaleString()}. After 30 days, login again on ${future.toLocaleString()}.`;
+    localStorage.setItem("date_login", message);
+  };
   // ✅ Logout: clear user & token
   const logout = () => {
     localStorage.removeItem("accessToken");

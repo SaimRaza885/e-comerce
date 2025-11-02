@@ -38,7 +38,7 @@ const OrderCard = ({ order, onDelete }) => {
   };
 
  return (
-  <div className="bg-white relative shadow-lg rounded-xl p-6 py-12 hover:shadow-2xl transition-shadow duration-300 border border-gray-100">
+  <div className="bg-white/80  border-accent relative shadow-lg rounded-xl p-6 py-12 hover:shadow-2xl transition-shadow duration-300 border">
     {/* Delete button in top-right corner */}
     <button
       onClick={onDelete}

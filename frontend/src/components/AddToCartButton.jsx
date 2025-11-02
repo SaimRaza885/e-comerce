@@ -53,15 +53,15 @@ const AddToCartButton = ({ product }) => {
           <FiShoppingCart className="text-lg" /> Add to Cart
         </button>
       ) : (
-        <div className="flex items-center gap-3 bg-green-500 text-white px-4 py-2 rounded-full shadow-md">
+        <div className="flex items-center gap-3  text-white px-4 py-2 rounded-full shadow-md">
           <button
             onClick={handleDecrease}
-            className="p-1 bg-green-600 hover:bg-green-700 rounded-full"
+            className="p-1 bg-red-600 hover:bg-red-700 rounded-full "
           >
             {quantity > 1 ? <FiMinus /> : <FiTrash2 />}
           </button>
 
-          <span className="font-semibold text-lg min-w-[20px] text-center">
+          <span className="font-semibold text-lg min-w-[20px] text-center  text-black">
             {quantity}
           </span>
 

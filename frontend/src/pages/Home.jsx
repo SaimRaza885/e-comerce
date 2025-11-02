@@ -10,17 +10,19 @@ const FAQSection = lazy(() => import("../sections/Faq"));
 
 // ProductSection loads normally (important: real data)
 import ProductSection from "../sections/Product";
+import FloatingWhatsApp from "../components/FloatingWhatsApp";
 
 const Home = () => {
   return (
     <div>
+
       {/* Hero slider */}
       <Image_Slider slides={slides} />
-
       {/* ProductSection loads immediately and fetches from backend */}
       <ProductSection />
 
       {/* Other sections load lazily */}
+      <FloatingWhatsApp phone="923001234567" message={encodeURIComponent("Hi! I want to order")} />
       <Suspense fallback={<div>Loading About Section...</div>}>
         <AboutSection />
       </Suspense>

@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Navbar({ search = false }) {
   const { cartItems } = useCart();
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const [isOpen, setIsOpen] = useState(false); // mobile menu
@@ -45,9 +45,8 @@ export default function Navbar({ search = false }) {
 
   return (
     <nav
-      className={`w-full z-50 transition-all duration-300 ${
-        search ? "!bg-black !text-white static" : "fixed top-0"
-      } ${scrolled ? "bg-white shadow-md text-black" : "bg-transparent text-white"}`}
+      className={`w-full z-50 transition-all duration-300 ${search ? "!bg-black !text-white static" : "fixed top-0"
+        } ${scrolled ? "bg-white shadow-md text-black" : "bg-transparent text-white"}`}
     >
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center h-16">
         {/* Logo */}
@@ -80,25 +79,27 @@ export default function Navbar({ search = false }) {
           </Link>
 
           {/* User Dropdown (Desktop) */}
-          <div className="relative" ref={desktopDropdownRef}>
-            <FiUser
-              size={22}
-              className={`cursor-pointer hover:text-accent ${scrolled ? "text-black" : "text-white"}`}
-              onClick={() => user && setShowDesktopDropdown((prev) => !prev)}
-            />
-            {!user && (
-              <Link to="/login" className="absolute top-0 left-0 w-full h-full" aria-label="Login"></Link>
-            )}
-            {user && showDesktopDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg z-50">
-                <Link to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"} className="block px-4 py-2 hover:bg-gray-100">
-                  Dashboard
-                </Link>
-                <Link to="/account/profile" className="block px-4 py-2 hover:bg-gray-100">Profile</Link>
-                <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100">Logout</Link>
-              </div>
-            )}
-          </div>
+          {accessToken && (
+
+
+            <div className="relative" ref={desktopDropdownRef}>
+              <FiUser
+                size={22}
+                className={`cursor-pointer hover:text-accent ${scrolled ? "text-black" : "text-white"}`}
+                onClick={() => user && setShowDesktopDropdown((prev) => !prev)}
+              />
+
+              {user && showDesktopDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded shadow-lg z-50">
+                  <Link to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"} className="block px-4 py-2 hover:bg-gray-100">
+                    Dashboard
+                  </Link>
+                  <Link to="/account/profile" className="block px-4 py-2 hover:bg-gray-100">Profile</Link>
+                  <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100">Logout</Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -135,56 +136,56 @@ export default function Navbar({ search = false }) {
             </Link>
 
             {/* Mobile User Dropdown */}
-            <div className="flex flex-col">
-              <button
-                className="flex items-center py-2 rounded hover:bg-gray-100"
-                onClick={() => user && setShowMobileDropdown((prev) => !prev)}
-              >
-                <FiUser size={22} />
-                <span className="ml-2 font-medium">{user ? "Account" : "Login"}</span>
-              </button>
+            {accessToken && (
 
-              {!user && (
-                <Link to="/login" onClick={() => setIsOpen(false)} className="pl-8 py-2 text-sm hover:bg-gray-100">
-                  Login
-                </Link>
-              )}
 
-              {user && showMobileDropdown && (
-                <div className="flex flex-col pl-8 text-sm">
-                  <Link
-                    to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
-                    onClick={() => {
-                      setIsOpen(false);
-                      setShowMobileDropdown(false);
-                    }}
-                    className="py-2 hover:bg-gray-100"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    to="/account/profile"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setShowMobileDropdown(false);
-                    }}
-                    className="py-2 hover:bg-gray-100"
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    to="/logout"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setShowMobileDropdown(false);
-                    }}
-                    className="py-2 hover:bg-gray-100"
-                  >
-                    Logout
-                  </Link>
-                </div>
-              )}
-            </div>
+              <div className="flex flex-col">
+                <button
+                  className="flex items-center py-2 rounded hover:bg-gray-100"
+                  onClick={() => user && setShowMobileDropdown((prev) => !prev)}
+                >
+                  <FiUser size={22} />
+                  <span className="ml-2 font-medium">{user ? "Account" : "Login"}</span>
+                </button>
+
+
+
+                {user && showMobileDropdown && (
+                  <div className="flex flex-col pl-8 text-sm">
+                    <Link
+                      to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
+                      onClick={() => {
+                        setIsOpen(false);
+                        setShowMobileDropdown(false);
+                      }}
+                      className="py-2 hover:bg-gray-100"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/account/profile"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setShowMobileDropdown(false);
+                      }}
+                      className="py-2 hover:bg-gray-100"
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      to="/logout"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setShowMobileDropdown(false);
+                      }}
+                      className="py-2 hover:bg-gray-100"
+                    >
+                      Logout
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

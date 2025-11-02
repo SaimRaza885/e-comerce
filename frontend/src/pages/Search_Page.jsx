@@ -164,24 +164,7 @@ export default function SearchPage() {
                             </select>
                         </div>
 
-                        {/* Category Filter */}
-                        {/* <div className="mb-5">
-            <label className="block font-medium text-gray-700 mb-2">
-              Category
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full border p-2 rounded-lg"
-            >
-            <option value="all">All</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                {cat}
-                </option>
-                ))}
-                </select>
-          </div> */}
+                      
 
                         {/* Sort By */}
                         <div>
