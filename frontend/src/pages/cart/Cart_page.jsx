@@ -32,7 +32,7 @@ const Cart = () => {
     return (
         <>
             <Navbar />
-            <Small_Banner title={"Shopping Cart"} bgImage={Images.shop_image} subtitle={"Review the items in your cart before checking out."} />
+            <Small_Banner title={"Shopping Cart"} bgImage={Images.shop_image} is_product={false}  subtitle={"Review the items in your cart before checking out."} />
             <div className="min-h-screen bg-gray-50 py-16 px-4">
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10">
                     {/* Cart Items */}

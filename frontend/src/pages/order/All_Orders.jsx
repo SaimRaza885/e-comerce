@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import OrderCard from "../../components/OrderStatusCard";
 import BackArrow from "../../components/BackArrow";
@@ -16,7 +16,6 @@ const OrdersList = () => {
   });
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // Fetch all orders from backend
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -31,12 +30,8 @@ const OrdersList = () => {
     };
 
     fetchOrders();
-
-    // const interval = setInterval(fetchOrders, 1800000) ; // Refresh every 30 minutes
-    // return () => clearInterval(interval);
   }, []);
 
-  // Delete order handler
   const handleDelete = async (id) => {
     try {
       await api.delete(`order/delete/${id}`);
@@ -48,14 +43,13 @@ const OrdersList = () => {
     }
   };
 
-  // Filter and sort logic
   const filteredOrders = orders
     .filter((order) => {
       const searchLower = filter.search.toLowerCase();
-      const date = new Date(order.date);
+      const date = new Date(order.createdAt);
 
       const matchSearch =
-        order.phone?.includes(searchLower) ||
+        order.phone?.toString().toLowerCase().includes(searchLower) ||
         order.city?.toLowerCase().includes(searchLower) ||
         order.country?.toLowerCase().includes(searchLower);
 
@@ -66,28 +60,38 @@ const OrdersList = () => {
       return matchSearch && inDateRange;
     })
     .sort((a, b) => {
-      if (filter.sort === "newest") return new Date(b.date) - new Date(a.date);
-      if (filter.sort === "oldest") return new Date(a.date) - new Date(b.date);
-      if (filter.sort === "price-high") return b.totalPrice - a.totalPrice;
-      if (filter.sort === "price-low") return a.totalPrice - b.totalPrice;
-      return 0;
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+
+      switch (filter.sort) {
+        case "newest":
+          return dateB - dateA;
+        case "oldest":
+          return dateA - dateB;
+        case "price-high":
+          return b.totalPrice - a.totalPrice;
+        case "price-low":
+          return a.totalPrice - b.totalPrice;
+        default:
+          return 0;
+      }
     });
 
-  // ✅ Download CSV (only filtered orders)
   const downloadCSV = () => {
     if (filteredOrders.length === 0)
       return alert("No filtered orders to download.");
 
     const csvRows = [
-      ["ID", "Phone", "Country", "City", "Street", "Total Price", "Date"],
+      ["ID", "Name", "Phone", "Country", "City", "Street", "Total Price", "Date"],
       ...filteredOrders.map((o) => [
         o._id,
+        o.Name,
         o.phone,
         o.country,
         o.city,
         o.street,
         o.totalPrice,
-        new Date(o.date).toLocaleString(),
+        new Date(o.createdAt).toLocaleString(),
       ]),
     ];
 
@@ -96,7 +100,6 @@ const OrdersList = () => {
     saveAs(blob, "filtered_orders.csv");
   };
 
-  // Loader
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -111,12 +114,8 @@ const OrdersList = () => {
             animation: spin 1s linear infinite;
           }
           @keyframes spin {
-            0% {
-              transform: rotate(0deg);
-            }
-            100% {
-              transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
           }
         `}</style>
       </div>
@@ -132,17 +131,12 @@ const OrdersList = () => {
         <h2 className="text-2xl font-bold">All Orders</h2>
         <div className="text-sm text-gray-600 flex items-center gap-2">
           <Calendar size={16} />
-          <span>
-            Last Updated:{" "}
-            {lastUpdated
-              ? lastUpdated.toLocaleTimeString()
-              : "Fetching..."}
-          </span>
+          <span>Last Updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "Fetching..."}</span>
         </div>
       </div>
 
-      {/* 🧭 Sticky Filter Bar */}
-      <div className="sticky top-16 bg-white z-10 border-b border-gray-200 py-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+      {/* Filter Bar */}
+      <div className=" bg-white z-10 border-b border-gray-200 py-4 mb-6 flex flex-wrap items-center justify-between gap-4">
         <input
           type="text"
           placeholder="Search by phone, city, or country..."
@@ -163,19 +157,6 @@ const OrdersList = () => {
             <option value="price-low">Price Low → High</option>
           </select>
 
-          <input
-            type="date"
-            value={filter.startDate}
-            onChange={(e) => setFilter({ ...filter, startDate: e.target.value })}
-            className="px-2 py-2 border rounded-md text-sm"
-          />
-          <input
-            type="date"
-            value={filter.endDate}
-            onChange={(e) => setFilter({ ...filter, endDate: e.target.value })}
-            className="px-2 py-2 border rounded-md text-sm"
-          />
-
           <button
             onClick={downloadCSV}
             className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-all"
@@ -193,19 +174,14 @@ const OrdersList = () => {
 
       {/* Summary */}
       <p className="text-gray-700 text-sm mb-4">
-        Showing <strong>{filteredOrders.length}</strong> of{" "}
-        <strong>{orders.length}</strong> orders.
+        Showing <strong>{filteredOrders.length}</strong> of <strong>{orders.length}</strong> orders.
       </p>
 
       {/* Orders Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-[100vh] pr-2">
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order, index) => (
-            <div
-              key={order._id}
-              className="animate-fadeIn"
-              style={{ animationDelay: `${index * 0.05}s` }}
-            >
+            <div key={order._id} className="animate-fadeIn" style={{ animationDelay: `${index * 0.05}s` }}>
               <OrderCard order={order} onDelete={() => handleDelete(order._id)} />
             </div>
           ))
@@ -214,21 +190,12 @@ const OrdersList = () => {
         )}
       </div>
 
-      {/* Fade-in animation */}
       <style jsx>{`
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fadeIn {
-          animation: fadeIn 0.4s ease forwards;
-        }
+        .animate-fadeIn { animation: fadeIn 0.4s ease forwards; }
       `}</style>
     </div>
   );

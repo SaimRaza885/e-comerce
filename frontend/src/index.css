@@ -180,8 +180,7 @@ html {
 
   .product_card {
     @apply relative bg-white/15 shadow-lg p-4 flex flex-col items-center 
-           rounded-md overflow-hidden transition-transform 
-           hover:shadow-2xl ;
+           rounded-md overflow-hidden  ;
   }
 
   .product_card-img {
