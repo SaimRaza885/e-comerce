@@ -22,14 +22,15 @@ const PriceTag = ({ price, unit, size = "sm", isBlack = false }) => {
     );
   }
 
-  // Gradient text version
+  // Premium text version
   return (
     <p
-      className={`${baseClasses} bg-gradient-to-r from-amber-500 to-yellow-600 bg-clip-text text-transparent`}
+      className={`${baseClasses} text-primary flex items-baseline gap-1`}
     >
-      Rs. {price?.toLocaleString()}
+      <span className="text-sm font-medium opacity-70">Rs.</span>
+      <span className="text-2xl font-extrabold">{price?.toLocaleString()}</span>
       {unit && (
-        <span className="text-gray-500 text-xs font-medium"> / {unit}</span>
+        <span className="text-secondary text-xs font-bold uppercase tracking-wider ml-1">/{unit}</span>
       )}
     </p>
   );

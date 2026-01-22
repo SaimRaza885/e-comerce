@@ -1,44 +1,68 @@
-import { Order } from "../model/order.model.js"
+import { Order } from "../model/order.model.js";
 import { Product } from "../model/product.model.js";
 import { ApiError } from "../utils/Api_Error.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-
+// 🟢 Create Order
 export const createOrder = asyncHandler(async (req, res) => {
-  const { Name,phone, country, city, street, items } = req.body;
+  const { Name, phone, country, city, street, items } = req.body;
 
-  if (!phone || !country || !Name || !city || !street || !items || items.length === 0) {
-    throw new ApiError(400, "All fields and at least one item are required");
-  }
-
-  // calculate total price
   let totalPrice = 0;
+  const orderItems = [];
+
+  // 1️⃣ Validate products and calculate total price
   for (const item of items) {
     const product = await Product.findById(item.product);
-    if (!product) throw new ApiError(404, "Product not found");
-    totalPrice += product.price * (item.quantity || 1);
+    if (!product) {
+      throw new ApiError(404, `Product not found with id: ${item.product}`);
+    }
+
+    if (!product.inStock || product.stock < item.quantity) {
+      throw new ApiError(400, `Product ${product.title} is out of stock or insufficient quantity`);
+    }
+
+    totalPrice += product.price * item.quantity;
+    orderItems.push({
+      product: product._id,
+      quantity: item.quantity,
+    });
   }
 
+  // 2️⃣ Create Order
   const order = await Order.create({
+    Name,
     phone,
     country,
     city,
     street,
-    items,
+    items: orderItems,
     totalPrice,
-    Name
   });
+
+  // 3️⃣ Reduce Stock
+  for (const item of items) {
+    await Product.findByIdAndUpdate(item.product, {
+      $inc: { stock: -item.quantity },
+    });
+
+    // Update inStock status if stock becomes 0
+    const updatedProduct = await Product.findById(item.product);
+    if (updatedProduct.stock === 0) {
+      updatedProduct.inStock = false;
+      await updatedProduct.save();
+    }
+  }
 
   return res
     .status(201)
     .json(new ApiResponse(201, order, "Order created successfully"));
 });
 
-
+// 🟡 Get All Orders
 export const getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find()
-    .populate("items.product", "title price images") // populate product info
+    .populate("items.product", "title price images")
     .sort({ createdAt: -1 });
 
   return res
@@ -46,6 +70,7 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, orders, "All orders fetched successfully"));
 });
 
+// 🔵 Update Order Status
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -68,11 +93,11 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, order, "Order status updated successfully"));
 });
 
-// 🔴 Cancel order (user)
+// 🔴 Delete/Cancel Order
 export const Delete_Order = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const order = await Order.findOneAndDelete({ _id: id });
+  const order = await Order.findByIdAndDelete(id);
   if (!order) throw new ApiError(404, "Order not found");
 
   return res

@@ -1,30 +1,9 @@
-// src/components/ProductSection.jsx
-import { useEffect, useState } from "react";
-import api from "../api/axios";
+import { useProducts } from "../hooks/useProducts";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/Product_Card";
 
 const ProductSection = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await api.get("/product/all"); // adjust endpoint
-        setProducts(res.data.data || []);
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch products");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
+  const { products, loading, error } = useProducts({ limit: 4 });
 
   // Skeleton card (dummy card while loading)
   const SkeletonCard = () => (
@@ -53,7 +32,7 @@ const ProductSection = () => {
           ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
           : error
             ? <div className="col-span-full text-center text-red-600">{error}</div>
-            : products.slice(0, 4).map((product) => (
+            : products.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))
         }

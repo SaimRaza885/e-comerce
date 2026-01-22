@@ -10,13 +10,15 @@ import {
 } from "../controller/product.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import verifyJWT from "../middleware/verifyAdmin.middleware.js";
+import { validate } from "../middleware/validate.middleware.js";
+import { createProductSchema, updateProductSchema, getProductsQuerySchema } from "../validations/product.validation.js";
 
 const router = Router();
 
 // --------------------
 // Public Routes
 // --------------------
-router.get("/all", getAllProducts);
+router.get("/all", validate(getProductsQuerySchema), getAllProducts);
 router.get("/:id", getProductById);
 
 // --------------------
@@ -28,11 +30,12 @@ router.post(
   "/create",
   verifyJWT("admin"),
   upload.array("images", 4),
+  validate(createProductSchema),
   createProduct
 );
 
 // Update Product (without images)
-router.put("/update/:id", verifyJWT("admin"), updateProduct);
+router.put("/update/:id", verifyJWT("admin"), validate(updateProductSchema), updateProduct);
 
 // Delete Product
 router.delete("/delete/:id", verifyJWT("admin"), deleteProduct);

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import Logo from "../../components/Logo";
 import PriceTag from "../../components/PriceTag";
+import Small_Banner from "../../components/Small_Banner";
 
 const Checkout = () => {
   const { cartItems, totalPrice, clearCart } = useCart();
@@ -79,6 +80,8 @@ const Checkout = () => {
 
   return (
     <div className="relative min-h-screen bg-gray-50 py-16 px-4">
+               <Small_Banner title={"Ceckout"} bgImage={Images.shop_image}   subtitle={"Review the items in your cart before checking out."} />
+   
       {/* ✅ Fullscreen Loader Overlay */}
       {loading && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">

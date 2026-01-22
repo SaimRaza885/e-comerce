@@ -1,4 +1,4 @@
-
+import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/Api_Error.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -10,7 +10,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
 
-    if (!user) throw new ApiError(404, "user not found");
+    if (!user) throw new ApiError(404, "User not found");
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
@@ -21,7 +21,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
-    console.log("Failed to generate ACCESS and REFRESH token:", error.message);
+    if (error instanceof ApiError) throw error;
     throw new ApiError(
       500,
       "Something went wrong while generating access and refresh token"
@@ -31,60 +31,36 @@ const generateAccessAndRefreshToken = async (userId) => {
 
 //  =================================== Register User  =================================== 
 
-
-
 // POST /api/user/register
 export const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, password, role, adminSecret } = req.body;
 
-  // 1️⃣ Required fields
-  if (!fullName || !email || !password) {
-    throw new ApiError(409, "Full name, email, and password are required");
-  }
-
-  // 2️⃣ Admin secret validation
+  // Admin secret validation
   if (role === "admin") {
     if (adminSecret !== process.env.ADMIN_SECRET) {
       throw new ApiError(401, "Invalid admin secret");
     }
   }
 
-  // 3️⃣ Check if user already exists
+  // Check if user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
     throw new ApiError(409, "User already exists");
   }
 
-  // 4️⃣ Handle avatar upload (optional)
-  // let avatar = null;
-
-  // if (req.file && req.file.path) {
-
-  //   const result = await Cloudinary_File_Upload(req.file.path);
-
-  //   if (!result.url || !result.public_id) {
-  //     throw new ApiError(400, "Failed to upload avatar");
-  //   }
-
-  //   avatar = { url: result.url, public_id: result.public_id };
-
-  // }
-
-
-  // 5️⃣ Create user (password hashing is handled by model pre-save hook)
+  // Create user
   const newUser = await User.create({
     fullName,
     email,
     password,
     role,
-    // avatar,
   });
 
   if (!newUser) {
     throw new ApiError(500, "Failed to create user");
   }
 
-  // 6️⃣ Return safe response (exclude password)
+  // Return safe response
   return res.status(201).json(
     new ApiResponse(
       201,
@@ -98,38 +74,36 @@ export const registerUser = asyncHandler(async (req, res) => {
     )
   );
 });
-;
-
-
 
 // 🟢  ===================================  Login user  =================================== 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    throw new ApiError(400, "Email and password are required");
-  }
-
   const user = await User.findOne({ email });
   if (!user) {
-    throw new ApiError(403, "Invalid email or password");
+    throw new ApiError(401, "Invalid email or password");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
-  if (!isPasswordValid) throw new ApiError(401, "Invalid credentials");
+  if (!isPasswordValid) throw new ApiError(401, "Invalid email or password");
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
   const userData = {
     _id: user._id,
     fullName: user.fullName,
+    email: user.email,
     role: user.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     avatar: user.avatar,
   };
 
-  const options = { httpOnly: true, secure: process.env.NODE_ENV === "production" };
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict"
+  };
 
   return res
     .cookie("accessToken", accessToken, options)
@@ -137,7 +111,6 @@ export const login = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, { userData, accessToken }, "User logged in successfully"));
 });
-
 
 // 🔴 Logout user
 export const logout = asyncHandler(async (req, res) => {
@@ -147,40 +120,36 @@ export const logout = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict"
+  };
+
+  res.clearCookie("accessToken", options);
+  res.clearCookie("refreshToken", options);
   return res.status(200).json(new ApiResponse(200, null, "User logged out successfully"));
 });
-
 
 // 🟡 =================================== Change Password ===================================
 export const changePassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
-  if (!oldPassword || !newPassword) {
-    throw new ApiError(400, "Old and new password are required");
-  }
-
   const user = await User.findById(req.user?._id);
-  if (!user) throw new ApiError(404, "user not found");
-
+  if (!user) throw new ApiError(404, "User not found");
 
   const isPasswordValid = await user.isPasswordCorrect(oldPassword);
   if (!isPasswordValid) throw new ApiError(401, "Old password is incorrect");
 
-  // ✅ update password safely
   user.password = newPassword;
-  await user.save(); // this triggers pre-save hashing
+  await user.save();
 
   return res
     .status(200)
     .json(new ApiResponse(200, null, "Password updated successfully"));
-})
+});
 
-
-
-// ====================== Get user by ID (only admin or the user themselves)====================
-
+// ====================== Get current user ====================
 export const getCurrentUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select("-password -refreshToken");
 
@@ -191,95 +160,58 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Current user fetched successfully"));
 });
 
-;
-
-
-// =================================== update use account ===================================
+// =================================== update user account ===================================
 export const updateUserAccount = asyncHandler(async (req, res) => {
-
-  const requester = req.user;
-
-  // Only admin or the user themselves can update
-  // if (requester.role !== "admin" && requester._id.toString() !== userId) {
-  //   throw new ApiError(403, "Access denied");
-  // }
-
-  const user = await User.findById(requester._id);
+  const user = await User.findById(req.user?._id);
   if (!user) throw new ApiError(404, "User not found");
 
   const { fullName } = req.body;
 
-  // Update fields if provided
   if (fullName) user.fullName = fullName;
-  // Handle avatar upload
-  // if (req.file && req.file.path) {
-  //   // Delete old avatar from Cloudinary if exists
-  //   if (user.avatar?.public_id) {
-  //     await deleteOnCloudinary(user.avatar.public_id);
-  //   }
-
-  //   // Upload new avatar
-  //   const result = await Cloudinary_File_Upload(req.file.path);
-  //   if (!result.url || !result.public_id) {
-  //     throw new ApiError(400, "Failed to upload avatar");
-  //   }
-  //   user.avatar = {
-  //     url: result.url,
-  //     public_id: result.public_id,
-  //   };
-  // }
 
   await user.save();
 
-  // Exclude sensitive fields in response
   const updatedUserData = {
-    // _id: user._id,
     fullName: user.fullName,
-    // email: user.email,
-    // role: user.role,
-    // avatar: user.avatar,
-    // createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
 
-
-  return res.status(200).json(new ApiResponse(201, updatedUserData, "User updated successfully"))
+  return res.status(200).json(new ApiResponse(200, updatedUserData, "User updated successfully"));
 });
-
-
 
 // ====================== Refresh Access Token ======================
 export const refreshAccessToken = asyncHandler(async (req, res) => {
-  const refreshToken = req.cookies?.refreshToken ||  req.header("Authorization")?.replace("Bearer ", "");
+  const refreshToken = req.cookies?.refreshToken || req.header("Authorization")?.replace("Bearer ", "");
 
   if (!refreshToken) {
     throw new ApiError(401, "No refresh token provided");
   }
 
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET);
 
-  // verify token
-  const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET);
+    const user = await User.findById(decoded._id);
+    if (!user) throw new ApiError(401, "User not found");
 
-  // find user
-  const user = await User.findById(decoded._id);
-  if (!user) throw new ApiError(401, "User not found");
+    if (user.refreshToken !== refreshToken) {
+      throw new ApiError(401, "Invalid refresh token");
+    }
 
-  // check if refresh token matches
-  if (user.refreshToken !== refreshToken) {
-    throw new ApiError(401, "Invalid refresh token");
-  }
+    const accessToken = user.generateAccessToken();
 
-  // issue new access token
-  const accessToken = user.generateAccessToken();
-
-  return res
-    .cookie("accessToken", accessToken, {
+    const options = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-    })
-    .status(200)
-    .json(new ApiResponse(200, { accessToken }, "New access token issued"));
+      sameSite: "strict"
+    };
 
+    return res
+      .cookie("accessToken", accessToken, options)
+      .status(200)
+      .json(new ApiResponse(200, { accessToken }, "New access token issued"));
+  } catch (error) {
+    throw new ApiError(401, "Invalid or expired refresh token");
+  }
 });
 
 

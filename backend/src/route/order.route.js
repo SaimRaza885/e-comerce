@@ -6,13 +6,15 @@ import {
     Delete_Order, // renamed for consistency
 } from "../controller/order.controller.js";
 import verifyJWT from "../middleware/verifyAdmin.middleware.js"; // assuming it handles role checking
+import { validate } from "../middleware/validate.middleware.js";
+import { createOrderSchema } from "../validations/order.validation.js";
 
 const router = express.Router();
 
 // ------------------- User Routes -------------------
 
 // Create a new order
-router.post("/create", createOrder);
+router.post("/create", validate(createOrderSchema), createOrder);
 
 
 // Delete/cancel an order (only by owner)

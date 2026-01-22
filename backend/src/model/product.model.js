@@ -39,10 +39,17 @@ const productSchema = new mongoose.Schema(
       type: String,
       unique: true, // ensures unique slugs
       required: true,
+      index: true,
     },
   },
   { timestamps: true }
 );
+
+// Indexes for performance
+productSchema.index({ title: "text", description: "text" }); // Text search
+productSchema.index({ price: 1 });
+productSchema.index({ inStock: 1 });
+productSchema.index({ createdAt: -1 });
 
 // Auto-generate slug before saving
 productSchema.pre("save", function (next) {

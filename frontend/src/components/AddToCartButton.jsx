@@ -47,29 +47,28 @@ const AddToCartButton = ({ product }) => {
       {!inCart ? (
         <button
           onClick={handleAddToCart}
-          className="inline-flex items-center gap-2 text-sm px-6 py-3 rounded-full shadow-md transition font-medium
-          bg-yellow-500 hover:bg-yellow-600 text-white"
+          className="btn-premium py-2 px-6 text-sm shadow-lg hover:shadow-primary/20"
         >
-          <FiShoppingCart className="text-lg" /> Add to Cart
+          <FiShoppingCart className="mr-2" /> Add
         </button>
       ) : (
-        <div className="flex items-center gap-3  text-white px-4 py-2 rounded-full shadow-md">
+        <div className="flex items-center gap-2 bg-cream border border-primary/20 p-1 rounded-full shadow-inner">
           <button
             onClick={handleDecrease}
-            className="p-1 bg-red-600 hover:bg-red-700 rounded-full "
+            className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-primary rounded-full hover:bg-gray-50 transition"
           >
-            {quantity > 1 ? <FiMinus /> : <FiTrash2 />}
+            {quantity > 1 ? <FiMinus size={14} /> : <FiTrash2 size={14} className="text-red-500" />}
           </button>
 
-          <span className="font-semibold text-lg min-w-[20px] text-center  text-black">
+          <span className="font-bold text-sm min-w-[24px] text-center text-primary">
             {quantity}
           </span>
 
           <button
             onClick={handleIncrease}
-            className="p-1 bg-green-600 hover:bg-green-700 rounded-full"
+            className="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-full hover:bg-opacity-90 transition"
           >
-            <FiPlus />
+            <FiPlus size={14} />
           </button>
         </div>
       )}

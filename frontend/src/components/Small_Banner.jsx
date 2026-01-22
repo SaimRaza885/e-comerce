@@ -1,9 +1,8 @@
 import React, { useMemo } from "react";
 
-const Small_Banner = ({ title, subtitle, bgImage,is_product=true }) => {
+const Small_Banner = ({ title, subtitle, bgImage  }) => {
 
-   const randomNum = useMemo(() => Math.floor(Math.random() * 5), []); // 0–4
-   console.log(randomNum)
+ 
 
 
   return (
@@ -11,7 +10,7 @@ const Small_Banner = ({ title, subtitle, bgImage,is_product=true }) => {
    
     <div
       className="w-full min-h-[70vh] flex items-center justify-center relative bg-center bg-cover"
-      style={{ backgroundImage: `url(${is_product ? bgImage.images[randomNum].url :bgImage })` }}
+      style={{ backgroundImage: `url(${ bgImage })` }}
     >
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60"></div>
