@@ -28,7 +28,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const res = await api.post("/user/refresh");
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/user/refresh`,
+          {},
+          { withCredentials: true }
+        );
         if (res.data.success) {
           const { accessToken } = res.data.data;
           localStorage.setItem("accessToken", accessToken);
@@ -38,7 +42,9 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Refresh token expired or invalid
         localStorage.removeItem("accessToken");
-        // Optional: window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }

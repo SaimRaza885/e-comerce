@@ -9,14 +9,14 @@ import {
 import verifyJWT from "../middleware/verifyAdmin.middleware.js";
 import optionalAuth from "../middleware/optionalAuth.middleware.js";
 import { validate } from "../middleware/validate.middleware.js";
-import { createOrderSchema } from "../validations/order.validation.js";
+import { validateCreateOrder } from "../validations/order.validation.js";
 
 const router = express.Router();
 
 // ------------------- User Routes -------------------
 
 // Create a new order (optional auth — attaches user if logged in)
-router.post("/create", optionalAuth, validate(createOrderSchema), createOrder);
+router.post("/create", optionalAuth, validate(validateCreateOrder), createOrder);
 
 // Get current user's orders
 router.get("/me", verifyJWT(), getMyOrders);
