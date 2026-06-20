@@ -87,7 +87,7 @@ const ProductDetail = () => {
           <nav className="flex items-center gap-2 text-sm text-gray-500">
             <Link to="/" className="hover:text-primary transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link to="/shop" className="hover:text-primary transition-colors">Shop</Link>
+            <Link to="/products/all" className="hover:text-primary transition-colors">Shop</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-gray-800 font-medium truncate max-w-[200px]">{product.title}</span>
           </nav>

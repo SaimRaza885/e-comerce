@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Order } from "../model/order.model.js";
 import { Product } from "../model/product.model.js";
 import { ApiError } from "../utils/Api_Error.js";
@@ -10,6 +11,20 @@ export const createOrder = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Admins cannot place orders");
   }
   const { Name, phone, country, city, street, items } = req.body;
+
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new ApiError(400, "At least one item is required");
+  }
+  for (const item of items) {
+    if (!mongoose.Types.ObjectId.isValid(item.product)) {
+      throw new ApiError(400, "Invalid product ID in order items");
+    }
+    const qty = Number(item.quantity) || 1;
+    if (!Number.isInteger(qty) || qty < 1 || qty > 999) {
+      throw new ApiError(400, "Item quantity must be a positive integer (max 999)");
+    }
+    item.quantity = qty;
+  }
 
   let totalPrice = 0;
   const orderItems = [];
@@ -57,18 +72,24 @@ export const createOrder = asyncHandler(async (req, res) => {
         { new: true }
       );
       if (!updated) throw new Error(item.product);
-      if (updated.stock === 0) {
-        updated.inStock = false;
-        await updated.save();
+      if (updated.stock <= 0) {
+        await Product.findByIdAndUpdate(item.product, { inStock: false });
       }
       decremented.push(item);
     }
   } catch (err) {
     for (const d of decremented) {
-      await Product.findByIdAndUpdate(d.product, { $inc: { stock: d.quantity } });
+      const restored = await Product.findByIdAndUpdate(
+        d.product,
+        { $inc: { stock: d.quantity } },
+        { new: true }
+      );
+      if (restored && restored.stock > 0) {
+        await Product.findByIdAndUpdate(d.product, { inStock: true });
+      }
     }
     await Order.findByIdAndDelete(order._id);
-    throw new ApiError(400, `Some items are no longer available in the requested quantity`);
+    throw new ApiError(400, "Some items are no longer available in the requested quantity");
   }
 
   return res
@@ -108,13 +129,21 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid status value");
   }
 
-  const order = await Order.findByIdAndUpdate(
-    id,
-    { status },
-    { new: true, runValidators: true }
-  );
-
+  const order = await Order.findById(id);
   if (!order) throw new ApiError(404, "Order not found");
+
+  const validTransitions = {
+    pending: ["shipped", "canceled"],
+    shipped: ["delivered", "canceled"],
+    delivered: [],
+    canceled: [],
+  };
+  if (!validTransitions[order.status]?.includes(status)) {
+    throw new ApiError(400, `Cannot change status from "${order.status}" to "${status}"`);
+  }
+
+  order.status = status;
+  await order.save();
 
   if (status === "canceled") {
     for (const item of order.items) {
@@ -138,10 +167,14 @@ export const Delete_Order = asyncHandler(async (req, res) => {
   if (!order) throw new ApiError(404, "Order not found");
 
   for (const item of order.items) {
-    await Product.findByIdAndUpdate(item.product, {
-      $inc: { stock: item.quantity },
-      $set: { inStock: true },
-    });
+    const updated = await Product.findByIdAndUpdate(
+      item.product,
+      { $inc: { stock: item.quantity } },
+      { new: true }
+    );
+    if (updated && updated.stock > 0) {
+      await Product.findByIdAndUpdate(item.product, { inStock: true });
+    }
   }
 
   return res

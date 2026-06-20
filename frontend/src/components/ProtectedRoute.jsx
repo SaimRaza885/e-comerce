@@ -1,15 +1,18 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Loading from "./Loading";
 
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
 
-  if (!user) {
-    // If not logged in, redirect to login page
+  if (!accessToken) {
     return <Navigate to="/login" replace />;
   }
 
-  // If children is passed, render it; otherwise render nested <Outlet />
+  if (!user) {
+    return <Loading />;
+  }
+
   return children ? children : <Outlet />;
 };
 

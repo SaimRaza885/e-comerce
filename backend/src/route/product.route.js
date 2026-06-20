@@ -9,16 +9,15 @@ import {
   SeachProduct,
 } from "../controller/product.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
-import verifyJWT from "../middleware/verifyAdmin.middleware.js";
-import { validate } from "../middleware/validate.middleware.js";
-import { validateCreateProduct, validateUpdateProduct, validateGetProductsQuery } from "../validations/product.validation.js";
+import verifyJWT from "../middleware/verifyJWT.middleware.js";
 
 const router = Router();
 
 // --------------------
 // Public Routes
 // --------------------
-router.get("/all", validate(validateGetProductsQuery), getAllProducts);
+router.get("/all", getAllProducts);
+router.get("/search", SeachProduct);
 router.get("/:id", getProductById);
 
 // --------------------
@@ -30,23 +29,21 @@ router.post(
   "/create",
   verifyJWT("admin"),
   upload.array("images", 4),
-  validate(validateCreateProduct),
   createProduct
 );
 
 // Update Product (without images)
-router.put("/update/:id", verifyJWT("admin"), validate(validateUpdateProduct), updateProduct);
+router.put("/update/:id", verifyJWT("admin"), updateProduct);
 
 // Delete Product
 router.delete("/delete/:id", verifyJWT("admin"), deleteProduct);
 
 // Update Product Images (replace up to 4 images)
 router.put(
-  "/images/update/",
+  "/images/update/:id",
   verifyJWT("admin"),
   upload.array("images", 4),
   updateProductImages
 );
 
-router.get("/search", SeachProduct)
 export default router;

@@ -5,7 +5,7 @@ import {
   updateReview,
   deleteReview,
 } from "../controller/review.controller.js";
-import verifyJWT from "../middleware/verifyAdmin.middleware.js";
+import verifyJWT from "../middleware/verifyJWT.middleware.js";
 
 const router = Router();
 

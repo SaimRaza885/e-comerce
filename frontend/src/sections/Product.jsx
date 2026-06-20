@@ -16,7 +16,7 @@ const ProductSection = () => {
   );
 
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-mint-50" id="product">
+    <section className="py-16 bg-gradient-to-b from-white to-gray-50" id="product">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-800">
           Our Premium Dry Fruits
@@ -41,8 +41,8 @@ const ProductSection = () => {
       {/* Show All Button */}
       <div className="text-center mt-10">
         <Link
-          to="products/all"
-          className="inline-block bg-accent text-black font-medium px-6 py-3 rounded-full shadow hover:bg-mint-600 transition"
+          to="/products/all"
+          className="inline-block bg-accent text-black font-medium px-6 py-3 rounded-full shadow hover:bg-accent/80 transition"
         >
           View All Products
         </Link>

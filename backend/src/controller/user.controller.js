@@ -43,7 +43,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 
   // Check if user already exists
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({ email: email?.toLowerCase() });
   if (userExists) {
     throw new ApiError(409, "User already exists");
   }
@@ -79,7 +79,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: email?.toLowerCase() });
   if (!user) {
     throw new ApiError(401, "Invalid email or password");
   }

@@ -21,8 +21,9 @@ export default function SearchPage() {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get("/product/all");
-        const data = Array.isArray(res.data.data?.products) ? res.data.data.products : [];
+        const params = query.trim() ? { q: query.trim() } : {};
+        const res = await api.get("/product/search", { params });
+        const data = Array.isArray(res.data.data) ? res.data.data : [];
         setProducts(data);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load products");
@@ -31,16 +32,16 @@ export default function SearchPage() {
       }
     };
     fetchProducts();
-  }, []);
+  }, [urlQuery]);
 
-  const filtered = query.trim()
-    ? products.filter((p) => p.title.toLowerCase().includes(query.toLowerCase()))
-    : products;
+  const filtered = products;
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (query.trim()) {
       setSearchParams({ q: query.trim() });
+    } else {
+      setSearchParams({});
     }
   };
 

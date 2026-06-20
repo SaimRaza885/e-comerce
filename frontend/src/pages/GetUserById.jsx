@@ -11,9 +11,6 @@ export default function ProfilePage() {
   const { user: authUser } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (authUser?.role === "admin") navigate("/admin/dashboard", { replace: true });
-  }, [authUser, navigate]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

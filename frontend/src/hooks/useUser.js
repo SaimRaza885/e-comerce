@@ -1,8 +1,7 @@
-// src/hooks/useUser.js
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
-const useUser = (userId) => {
+const useUser = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -11,8 +10,8 @@ const useUser = (userId) => {
     const fetchUser = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(`/user/${userId}`);
-        setUser(data.data); // ✅ ApiResponse wraps user in data
+        const { data } = await api.get("/user/me");
+        setUser(data.data);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch user");
       } finally {
@@ -20,8 +19,8 @@ const useUser = (userId) => {
       }
     };
 
-    if (userId) fetchUser();
-  }, [userId]);
+    fetchUser();
+  }, []);
 
   return { user, loading, error };
 };

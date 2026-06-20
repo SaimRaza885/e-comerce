@@ -1,15 +1,22 @@
-import { PackageOpen } from "lucide-react";
+import { PackageOpen, ShoppingCart, Search, ListOrdered } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Button from "./Button";
 
 const iconMap = {
-  cart: PackageOpen,
-  search: PackageOpen,
-  orders: PackageOpen,
+  cart: ShoppingCart,
+  search: Search,
+  orders: ListOrdered,
   default: PackageOpen,
 };
 
 const EmptyState = ({ icon = "default", title, description, actionLabel, actionLink, onAction }) => {
   const Icon = iconMap[icon] || iconMap.default;
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (onAction) onAction();
+    else if (actionLink) navigate(actionLink);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
@@ -21,11 +28,7 @@ const EmptyState = ({ icon = "default", title, description, actionLabel, actionL
         <p className="text-secondary max-w-md mb-8">{description}</p>
       )}
       {actionLabel && (actionLink || onAction) && (
-        <Button
-          variant="primary"
-          onClick={onAction}
-          {...(actionLink ? { onClick: () => window.location.href = actionLink } : {})}
-        >
+        <Button variant="primary" onClick={handleClick}>
           {actionLabel}
         </Button>
       )}

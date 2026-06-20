@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Loading from "./components/Loading";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { useCart } from "./context/Cart";
 const Home = lazy(() => import("./pages/Home"));
 const ProductDetails = lazy(() => import("./pages/ProductDetails"));
@@ -40,22 +41,22 @@ const App = () => {
           <Route path="/search" element={<Layout><SearchPage /></Layout>} />
 
           {/* user routes */}
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/account/profile" element={<Layout><UserProfile /></Layout>} />
-          <Route path="/account/change-password" element={<Layout><ChangePassword /></Layout>} />
-          <Route path="/checkout" element={<Layout><Create_order cartItems={cartItems} /></Layout>} />
-          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/my-orders" element={<Layout><OrdersPage /></Layout>} />
-          <Route path="/cart" element={<Layout><Cart /></Layout>} />
+          <Route path="/logout" element={<ProtectedRoute><Logout /></ProtectedRoute>} />
+          <Route path="/account/profile" element={<ProtectedRoute><Layout><UserProfile /></Layout></ProtectedRoute>} />
+          <Route path="/account/change-password" element={<ProtectedRoute><Layout><ChangePassword /></Layout></ProtectedRoute>} />
+          <Route path="/checkout" element={<ProtectedRoute><Layout><Create_order cartItems={cartItems} /></Layout></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>} />
+          <Route path="/my-orders" element={<ProtectedRoute><Layout><OrdersPage /></Layout></ProtectedRoute>} />
+          <Route path="/cart" element={<ProtectedRoute><Layout><Cart /></Layout></ProtectedRoute>} />
 
           {/* admin routes */}
-          <Route path="product/create" element={<Layout><CreateProduct /></Layout>} />
-          <Route path="product/update/:id" element={<Layout><UpdateProduct /></Layout>} />
-          <Route path="admin/dashboard" element={<Layout><AdminDashboard /></Layout>} />
-          <Route path="admin/dashboard/orders" element={<Layout><AllOrders /></Layout>} />
+          <Route path="/product/create" element={<ProtectedRoute><Layout><CreateProduct /></Layout></ProtectedRoute>} />
+          <Route path="/product/update/:id" element={<ProtectedRoute><Layout><UpdateProduct /></Layout></ProtectedRoute>} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
+          <Route path="/admin/dashboard/orders" element={<ProtectedRoute><Layout><AllOrders /></Layout></ProtectedRoute>} />
 
           {/* 404 catch-all — must be LAST */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>
       </Suspense>
     </BrowserRouter>

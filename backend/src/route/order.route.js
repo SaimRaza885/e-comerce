@@ -6,17 +6,15 @@ import {
     Delete_Order,
     getMyOrders,
 } from "../controller/order.controller.js";
-import verifyJWT from "../middleware/verifyAdmin.middleware.js";
+import verifyJWT from "../middleware/verifyJWT.middleware.js";
 import optionalAuth from "../middleware/optionalAuth.middleware.js";
-import { validate } from "../middleware/validate.middleware.js";
-import { validateCreateOrder } from "../validations/order.validation.js";
 
 const router = express.Router();
 
 // ------------------- User Routes -------------------
 
 // Create a new order (optional auth — attaches user if logged in)
-router.post("/create", optionalAuth, validate(validateCreateOrder), createOrder);
+router.post("/create", optionalAuth, createOrder);
 
 // Get current user's orders
 router.get("/me", verifyJWT(), getMyOrders);

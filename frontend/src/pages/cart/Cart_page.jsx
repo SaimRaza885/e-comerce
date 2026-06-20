@@ -11,17 +11,23 @@ const Cart = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const [removingId, setRemovingId] = useState(null);
+
   useEffect(() => {
     if (user?.role === "admin") navigate("/admin/dashboard", { replace: true });
   }, [user, navigate]);
-  const [removingId, setRemovingId] = useState(null);
+
+  useEffect(() => {
+    return () => setRemovingId(null);
+  }, []);
 
   const handleRemove = (id) => {
     setRemovingId(id);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       removeFromCart(id);
       setRemovingId(null);
     }, 200);
+    return () => clearTimeout(timer);
   };
 
   if (cartItems.length === 0) {
@@ -112,7 +118,7 @@ const Cart = () => {
                       <div className="text-right">
                         <p className="text-xs text-gray-400 mb-0.5">Subtotal</p>
                         <p className="text-sm font-bold text-gray-900">Rs. {(item.price * item.quantity).toLocaleString()}</p>
-                        {item.quantity >= item.stock && (
+                        {item.stock > 0 && item.quantity >= item.stock && (
                           <p className="text-[10px] text-amber-600 font-medium mt-0.5">Max</p>
                         )}
                       </div>

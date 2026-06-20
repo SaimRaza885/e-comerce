@@ -39,7 +39,7 @@ const MyOrders = () => {
       }
     };
     fetchOrders();
-  }, [accessToken, navigate]);
+  }, [accessToken, navigate, user]);
 
   if (loading) {
     return (

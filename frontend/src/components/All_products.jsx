@@ -14,10 +14,7 @@ const AllOrders = () => {
 
         const res = await api.get("/order/all");
 
-        // 🔎 Log response once to see shape
-        console.log("All orders API response:", res.data);
-
-        // ✅ Handle flexible API shapes safely
+        // Handle flexible API shapes safely
         const data = res.data?.data || res.data || [];
         setOrders(Array.isArray(data) ? data : []);
       } catch (error) {

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Review } from "../model/review.model.js";
 import { Product } from "../model/product.model.js";
+import { Order } from "../model/order.model.js";
 import { ApiError } from "../utils/Api_Error.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -24,13 +25,32 @@ export const createReview = asyncHandler(async (req, res) => {
   const { product, rating, comment } = req.body;
   const userId = req.user._id;
 
+  const productExists = await Product.findById(product);
+  if (!productExists) {
+    throw new ApiError(404, "Product not found");
+  }
+
+  const hasBought = await Order.findOne({
+    user: userId,
+    status: "delivered",
+    "items.product": product,
+  });
+  if (!hasBought) {
+    throw new ApiError(403, "Only verified buyers can review this product");
+  }
+
   const existing = await Review.findOne({ product, user: userId });
   if (existing) {
     throw new ApiError(400, "You already reviewed this product");
   }
 
   const review = await Review.create({ product, user: userId, rating, comment });
-  await updateProductRating(product);
+  try {
+    await updateProductRating(product);
+  } catch {
+    await Review.findByIdAndDelete(review._id);
+    throw new ApiError(500, "Failed to update product rating");
+  }
 
   const populated = await Review.findById(review._id).populate("user", "fullName");
 
@@ -41,6 +61,10 @@ export const createReview = asyncHandler(async (req, res) => {
 
 export const getProductReviews = asyncHandler(async (req, res) => {
   const { productId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(productId)) {
+    throw new ApiError(400, "Invalid product ID format");
+  }
 
   const reviews = await Review.find({ product: productId })
     .populate("user", "fullName")

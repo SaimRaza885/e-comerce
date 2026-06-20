@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { useCart } from "../context/Cart";
+import { useAuth } from "../context/AuthContext";
 
 const AddToCartButton = ({ product }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const { cartItems, addToCart, updateQuantity, removeFromCart } = useCart();
   const [inCart, setInCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -41,6 +44,12 @@ const AddToCartButton = ({ product }) => {
       updateQuantity(product._id, newQty);
     }
   };
+
+  if (isAdmin) {
+    return (
+      <span className="text-xs font-medium text-gray-400 italic">Admin</span>
+    );
+  }
 
   if (!product.inStock && product.stock === 0) {
     return (

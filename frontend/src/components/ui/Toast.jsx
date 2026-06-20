@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { CheckCircle, XCircle, AlertCircle, X } from "lucide-react";
 
 const icons = {
@@ -21,15 +21,17 @@ const iconColors = {
 
 const Toast = ({ message, type = "success", duration = 4000, onClose }) => {
   const [visible, setVisible] = useState(true);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const Icon = icons[type];
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(onClose, 300);
+      setTimeout(() => onCloseRef.current?.(), 300);
     }, duration);
     return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  }, [duration]);
 
   return (
     <div
@@ -37,7 +39,7 @@ const Toast = ({ message, type = "success", duration = 4000, onClose }) => {
     >
       <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${iconColors[type]}`} />
       <p className="text-sm font-medium flex-1">{message}</p>
-      <button onClick={() => { setVisible(false); setTimeout(onClose, 300); }} className="flex-shrink-0 hover:opacity-70">
+      <button onClick={() => { setVisible(false); setTimeout(() => onCloseRef.current?.(), 300); }} className="flex-shrink-0 hover:opacity-70">
         <X className="w-4 h-4" />
       </button>
     </div>

@@ -28,17 +28,16 @@ export const AuthProvider = ({ children }) => {
   }, [accessToken]);
 
   // ✅ Login: store user & token
-  const login = (userData, token, loginDate) => {
+  const login = (userData, token) => {
     localStorage.setItem("accessToken", token);
     setAccessToken(token);
     setUser(userData);
 
-    // Calculate 30 days later
-    const future = new Date(loginDate);
-    future.setDate(loginDate.getDate() + 30);
+    const now = new Date();
+    const future = new Date(now);
+    future.setDate(now.getDate() + 30);
 
-    // Create readable message
-    const message = `You logged in on ${loginDate.toLocaleString()}. After 30 days, login again on ${future.toLocaleString()}.`;
+    const message = `You logged in on ${now.toLocaleString()}. After 30 days, login again on ${future.toLocaleString()}.`;
     localStorage.setItem("date_login", message);
   };
   // ✅ Logout: clear user & token

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Star, Trash2, Edit3, MessageSquare, User as UserIcon, Clock } from "lucide-react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -147,7 +148,9 @@ const ReviewSection = ({ productId }) => {
           <MessageSquare className="w-10 h-10 mx-auto mb-2" />
           <p className="text-sm font-medium">No reviews yet</p>
           {!isAuthenticated && (
-            <p className="text-xs mt-1">Sign in to leave a review</p>
+            <p className="text-xs mt-1">
+              <Link to="/login" className="text-accent font-semibold hover:underline">Sign in</Link> to leave a review
+            </p>
           )}
         </div>
       ) : (

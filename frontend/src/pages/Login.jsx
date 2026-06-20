@@ -27,7 +27,7 @@ export default function Login() {
     try {
       const res = await api.post("/user/login", form, { withCredentials: true });
       const { accessToken: token, userData } = res.data.data;
-      login(userData, token, new Date());
+      login(userData, token);
       navigate(userData.role === "admin" ? "/admin/dashboard" : "/account/profile");
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password");

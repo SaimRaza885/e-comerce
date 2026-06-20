@@ -40,7 +40,7 @@ const ProductCard = ({ product, search = false }) => {
           )}
 
           {/* Quick add button (appears on hover) — hidden for admin */}
-          {!search && !isAdmin && product.inStock && (
+          {!search && !isAdmin && (product.inStock ?? product.stock > 0) && (
             <button
               onClick={handleQuickAdd}
               className="absolute bottom-2 right-2 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-accent hover:text-primary"
@@ -60,14 +60,14 @@ const ProductCard = ({ product, search = false }) => {
           )}
 
           {/* Out of stock badge */}
-          {!product.inStock && (
+          {!(product.inStock ?? product.stock > 0) && (
             <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
               Out of Stock
             </div>
           )}
 
           {/* Low stock badge */}
-          {product.inStock && product.stock <= 5 && product.stock > 0 && (
+          {(product.inStock ?? product.stock > 0) && product.stock <= 5 && product.stock > 0 && (
             <div className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
               Only {product.stock}
             </div>
@@ -93,7 +93,7 @@ const ProductCard = ({ product, search = false }) => {
                 </div>
               )}
             </div>
-            {!search && !isAdmin && product.inStock && (
+            {!search && !isAdmin && (product.inStock ?? product.stock > 0) && (
               <button
                 onClick={handleQuickAdd}
                 className="flex items-center gap-1 px-3 py-1.5 bg-accent/10 text-accent text-xs font-bold rounded-lg hover:bg-accent hover:text-primary transition-all"
@@ -109,7 +109,7 @@ const ProductCard = ({ product, search = false }) => {
                 <Edit3 className="w-3 h-3" /> Edit
               </button>
             )}
-            {!search && !isAdmin && !product.inStock && (
+            {!search && !isAdmin && !(product.inStock ?? product.stock > 0) && (
               <span className="text-xs text-gray-300 font-medium">Unavailable</span>
             )}
           </div>

@@ -53,15 +53,8 @@ const FloatingWhatsApp = ({
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
         // Tailwind classes: fixed position, responsive spacing, rounded full, shadow, ring for glow
-        className={`
-          fixed
-          z-50
-          right-${right}
-          bottom-${bottom}
-          md:right-8 md:bottom-8
-          transform
-          translate-y-0
-          `}
+        className={`fixed z-50 md:right-8 md:bottom-8 transform translate-y-0`}
+        style={{ right: `${right}rem`, bottom: `${bottom}rem` }}
         // inline style for transform using our small yOffset and smooth transition
         style={{
           transform: `translateY(${yOffset}px)`,

@@ -58,16 +58,6 @@ const Checkout = () => {
         })),
       });
 
-      const newOrder = {
-        id: Date.now(),
-        date: new Date().toISOString(),
-        ...form,
-        items: cartItems,
-        totalPrice,
-      };
-      const existing = JSON.parse(localStorage.getItem("orders") || "[]");
-      localStorage.setItem("orders", JSON.stringify([...existing, newOrder]));
-
       clearCart();
       setPopup({ visible: true, message: "Order placed successfully!", type: "success" });
       setTimeout(() => navigate("/my-orders"), 2000);

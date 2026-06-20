@@ -42,13 +42,14 @@ const CreateProduct = () => {
       Object.entries(form).forEach(([key, val]) => data.append(key, val));
       images.forEach((img) => data.append("images", img));
 
-      await api.post("product/create", data, {
+      await api.post("/product/create", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       navigate("/admin/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create product");
+      console.error("Create product error:", err);
+      setError(err.response?.data?.message || err.message || "Failed to create product");
     } finally {
       setLoading(false);
     }

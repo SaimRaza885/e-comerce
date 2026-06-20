@@ -30,14 +30,12 @@ export default function Register() {
     setError("");
 
     try {
-      const formData = new FormData();
+      const payload = {};
       Object.entries(form).forEach(([key, value]) => {
-        if (value) formData.append(key, value);
+        if (value) payload[key] = value;
       });
 
-      await api.post("/user/register", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await api.post("/user/register", payload);
 
       navigate("/login");
     } catch (err) {

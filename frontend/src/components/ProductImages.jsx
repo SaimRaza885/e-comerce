@@ -18,7 +18,7 @@ const ProductImages = ({ images }) => {
           src={mainImage}
           alt="Product"
           className="w-full h-full object-cover"
-          onError={(e) => { e.target.src = ""; e.target.parentElement.classList.add("bg-cream"); }}
+          onError={(e) => { e.target.style.display = "none"; }}
         />
       </div>
       {images.length > 1 && (

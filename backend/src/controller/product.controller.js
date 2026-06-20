@@ -5,6 +5,8 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Cloudinary_File_Upload, deleteOnCloudinary } from "../utils/upload_On_Cloudinary.js";
 import slugify from "slugify";
 
+const parseBool = (v) => v === true || v === "true" || v === "on" || v === "1";
+
 // 🟢 Create Product
 export const createProduct = asyncHandler(async (req, res) => {
   const { title, urdu_name, description, price, inStock, stock } = req.body;
@@ -35,10 +37,10 @@ export const createProduct = asyncHandler(async (req, res) => {
     title,
     urdu_name,
     description,
-    price,
+    price: Number(price),
     images: uploadedImages,
-    inStock,
-    stock,
+    inStock: parseBool(inStock),
+    stock: Number(stock),
     slug,
   });
 
@@ -53,11 +55,12 @@ export const getAllProducts = asyncHandler(async (req, res) => {
 
   const queryObj = {};
 
-  // 1️⃣ Filtering
+  // 1️⃣ Filtering (with ReDoS protection — escape regex special chars)
   if (search) {
+    const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     queryObj.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { description: { $regex: search, $options: "i" } }
+      { title: { $regex: escaped, $options: "i" } },
+      { description: { $regex: escaped, $options: "i" } }
     ];
   }
 
@@ -68,7 +71,7 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   }
 
   if (inStock !== undefined) {
-    queryObj.inStock = inStock;
+    queryObj.inStock = parseBool(inStock);
   }
 
   // 2️⃣ Sorting
@@ -79,12 +82,14 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   }
 
   // 3️⃣ Pagination
-  const skip = (page - 1) * limit;
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 10));
+  const skip = (pageNum - 1) * limitNum;
 
   const products = await Product.find(queryObj)
     .sort(sortBy)
     .skip(skip)
-    .limit(limit);
+    .limit(limitNum);
 
   const total = await Product.countDocuments(queryObj);
 
@@ -94,9 +99,9 @@ export const getAllProducts = asyncHandler(async (req, res) => {
       products,
       pagination: {
         total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
       }
     }, "Products fetched successfully"));
 });
@@ -128,8 +133,12 @@ export const updateProduct = asyncHandler(async (req, res) => {
   if (urdu_name) product.urdu_name = urdu_name;
   if (description) product.description = description;
   if (price !== undefined) product.price = price;
-  if (inStock !== undefined) product.inStock = inStock;
-  if (stock !== undefined) product.stock = stock;
+  if (inStock !== undefined) product.inStock = parseBool(inStock);
+  if (stock !== undefined) {
+    product.stock = stock;
+    if (stock <= 0) product.inStock = false;
+    else if (inStock === undefined) product.inStock = true;
+  }
 
   await product.save();
 
@@ -199,11 +208,12 @@ export const updateProductImages = asyncHandler(async (req, res) => {
 });
 
 export const SeachProduct = asyncHandler(async (req, res) => {
-  const query = req.query.q || "";
+  const raw = req.query.q || "";
+  const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const products = await Product.find({
     $or: [
-      { title: { $regex: query, $options: "i" } },
-      { description: { $regex: query, $options: "i" } }
+      { title: { $regex: escaped, $options: "i" } },
+      { description: { $regex: escaped, $options: "i" } }
     ]
   });
 

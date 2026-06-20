@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { Lock, Eye, EyeOff, KeyRound } from "lucide-react";
@@ -13,6 +13,12 @@ export default function ChangePassword() {
   const [showOld, setShowOld] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!localStorage.getItem("accessToken")) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,11 +37,6 @@ export default function ChangePassword() {
       setLoading(false);
     }
   };
-
-  if (!localStorage.getItem("accessToken")) {
-    navigate("/login");
-    return null;
-  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-gray-50 px-4">

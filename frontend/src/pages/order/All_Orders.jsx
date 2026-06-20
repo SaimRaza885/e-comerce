@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { Download, RefreshCw, Search, Trash2 } from "lucide-react";
 import { Button, Spinner, Badge } from "../../components/ui";
+import { saveAs } from "file-saver";
 
 const statusColors = {
   pending: "warning",
@@ -26,7 +27,7 @@ const OrdersList = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await api.get("order/all");
+      const res = await api.get("/order/all");
       setOrders(Array.isArray(res.data.data) ? res.data.data : []);
       setLastUpdated(new Date());
     } catch (err) {
@@ -39,7 +40,7 @@ const OrdersList = () => {
   const handleStatusChange = async (id, status) => {
     setUpdating(id);
     try {
-      await api.put(`order/update/${id}`, { status });
+      await api.put(`/order/status/${id}`, { status });
       setOrders((prev) => prev.map((o) => (o._id === id ? { ...o, status } : o)));
     } catch (err) {
       alert(err.response?.data?.message || "Failed to update status");
@@ -51,7 +52,7 @@ const OrdersList = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this order?")) return;
     try {
-      await api.delete(`order/delete/${id}`);
+      await api.delete(`/order/delete/${id}`);
       setOrders((prev) => prev.filter((o) => o._id !== id));
     } catch (err) {
       alert(err.response?.data?.message || "Failed to delete order");
@@ -79,9 +80,14 @@ const OrdersList = () => {
 
   const downloadCSV = () => {
     if (!filteredOrders.length) return alert("No orders to download.");
+    const csvEscape = (v) => {
+      const s = String(v ?? "");
+      return /[,"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
     const rows = [["ID", "Name", "Phone", "Country", "City", "Street", "Total", "Date"],
       ...filteredOrders.map((o) => [o._id, o.Name, o.phone, o.country, o.city, o.street, o.totalPrice, new Date(o.createdAt).toLocaleString()])];
-    const blob = new Blob([rows.map((r) => r.join(",")).join("\n")], { type: "text/csv;charset=utf-8" });
+    const csv = rows.map((r) => r.map(csvEscape).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     saveAs(blob, "orders.csv");
   };
 

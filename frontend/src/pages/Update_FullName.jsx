@@ -20,7 +20,7 @@ const UpdateFullName = ({ id, isOpen, onClose }) => {
     setLoading(true);
     setMessage("");
     try {
-      await api.put(`user/update/${id}`, { fullName }, { withCredentials: true });
+      await api.put(`/user/update/${id}`, { fullName }, { withCredentials: true });
       setMessage("Full name updated!");
       setTimeout(() => { onClose(); window.location.reload(); }, 1200);
     } catch (err) {
