@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { LayoutDashboard, ShoppingBag, User as UserIcon, Lock, LogOut, Package, Clock, RefreshCw } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import { Button, Spinner, Badge } from "../../components/ui";
 
 const sidebarLinks = [
@@ -22,15 +23,17 @@ const User = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (user?.role === "admin") { navigate("/admin/dashboard", { replace: true }); return; }
     if (!localStorage.getItem("accessToken")) {
       navigate("/login");
       return;
     }
     fetchOrders();
-  }, []);
+  }, [user]);
 
   const fetchOrders = async () => {
     setLoading(true);

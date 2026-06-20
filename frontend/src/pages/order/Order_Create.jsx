@@ -1,20 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShoppingBag, Truck, CreditCard, MapPin, Phone, User } from "lucide-react";
 import { useCart } from "../../context/Cart";
+import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
 import { Button, Input } from "../../components/ui";
 import PriceTag from "../../components/PriceTag";
 
 const Checkout = () => {
   const { cartItems, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === "admin") navigate("/admin/dashboard", { replace: true });
+  }, [user, navigate]);
 
   const [form, setForm] = useState({
     Name: "", phone: "", country: "", city: "", street: "",
   });
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState({ visible: false, message: "", type: "" });
+
+  const hasStockIssue = cartItems.some(
+    (item) => item.stock != null && item.quantity > item.stock
+  );
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -24,6 +34,17 @@ const Checkout = () => {
     e.preventDefault();
     if (!form.Name || !form.phone || !form.country || !form.city || !form.street) {
       setPopup({ visible: true, message: "Please fill all fields.", type: "error" });
+      return;
+    }
+    const stockIssues = cartItems.filter(
+      (item) => item.stock != null && item.quantity > item.stock
+    );
+    if (stockIssues.length > 0) {
+      setPopup({
+        visible: true,
+        message: `Not enough stock for: ${stockIssues.map((i) => i.title).join(", ")}`,
+        type: "error",
+      });
       return;
     }
     setLoading(true);
@@ -141,11 +162,16 @@ const Checkout = () => {
               <Button
                 type="submit"
                 loading={loading}
+                disabled={hasStockIssue}
                 icon={<CreditCard className="w-4 h-4" />}
                 className="w-full mt-6"
                 size="lg"
               >
-                {loading ? "Processing..." : "Place Order"}
+                {loading
+                  ? "Processing..."
+                  : hasStockIssue
+                    ? "Update Cart Quantities"
+                    : "Place Order"}
               </Button>
             </form>
           </div>
@@ -159,23 +185,39 @@ const Checkout = () => {
               Order Summary
             </h2>
 
+            {hasStockIssue && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600 font-medium">
+                Some items have insufficient stock. Please adjust quantities in your cart before placing the order.
+              </div>
+            )}
+
             <div className="space-y-3 mb-5">
-              {cartItems.map((item) => (
-                <div key={item._id} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-white border border-gray-100 flex-shrink-0">
-                    <img
-                      src={item.images?.[0]?.url || ""}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
+              {cartItems.map((item) => {
+                const insufficient = item.stock != null && item.quantity > item.stock;
+                return (
+                  <div key={item._id} className={`flex items-center gap-3 p-2.5 rounded-lg ${
+                    insufficient ? "bg-red-50 border border-red-200" : "bg-gray-50"
+                  }`}>
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-white border border-gray-100 flex-shrink-0">
+                      <img
+                        src={item.images?.[0]?.url || ""}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
+                      <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                      {item.stock != null && (
+                        <span className={`text-[10px] font-medium ${insufficient ? "text-red-500" : "text-green-600"}`}>
+                          {insufficient ? `${item.stock} available` : `${item.stock} in stock`}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm font-bold text-gray-900">Rs. {(item.price * item.quantity).toLocaleString()}</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
-                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                  </div>
-                  <p className="text-sm font-bold text-gray-900">Rs. {(item.price * item.quantity).toLocaleString()}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="border-t border-gray-200 pt-4 space-y-2.5">

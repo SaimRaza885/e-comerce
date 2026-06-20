@@ -20,8 +20,9 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (!accessToken) { navigate("/login"); return; }
+    if (user && user.role !== "admin") { navigate("/", { replace: true }); return; }
     fetchProducts();
-  }, [accessToken]);
+  }, [accessToken, user]);
 
   const fetchProducts = async () => {
     setLoading(true);

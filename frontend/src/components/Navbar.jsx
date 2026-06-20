@@ -60,13 +60,10 @@ export default function Navbar() {
           <nav className="hidden lg:flex items-center gap-1 ml-4">
             <Link to="/" className="px-3 py-2 text-sm font-bold text-primary hover:text-accent rounded-lg hover:bg-gray-50 transition-colors">Home</Link>
             <Link to="/products/all" className="px-3 py-2 text-sm font-bold text-primary hover:text-accent rounded-lg hover:bg-gray-50 transition-colors">Shop</Link>
-            <Link to="/my-orders" className="px-3 py-2 text-sm font-bold text-primary hover:text-accent rounded-lg hover:bg-gray-50 transition-colors">Orders</Link>
-            {user?.role === "admin" && (
-              <>
-                <Link to="/admin/dashboard" className="px-3 py-2 text-sm font-bold text-accent hover:text-accent/80 rounded-lg hover:bg-accent/10 transition-colors">Dashboard</Link>
-                <Link to="/product/create" className="px-3 py-2 text-sm font-bold text-green-600 hover:text-green-700 rounded-lg hover:bg-green-50 transition-colors">+ Add Product</Link>
-              </>
+            {user?.role !== "admin" && (
+              <Link to="/my-orders" className="px-3 py-2 text-sm font-bold text-primary hover:text-accent rounded-lg hover:bg-gray-50 transition-colors">Orders</Link>
             )}
+
           </nav>
 
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl mx-auto">
@@ -89,14 +86,16 @@ export default function Navbar() {
               <Search className="w-5 h-5" />
             </button>
 
-            <Link to="/cart" className="relative p-2 text-primary hover:bg-gray-100 rounded-lg transition-colors">
-              <ShoppingCart className="w-5 h-5" />
-              {totalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-accent text-primary text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm border-2 border-white">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
+            {user?.role !== "admin" && (
+              <Link to="/cart" className="relative p-2 text-primary hover:bg-gray-100 rounded-lg transition-colors">
+                <ShoppingCart className="w-5 h-5" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-accent text-primary text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm border-2 border-white">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {accessToken && user ? (
               <div className="relative" ref={dropdownRef}>
@@ -119,15 +118,17 @@ export default function Navbar() {
                       <Link to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"} onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
                         <LayoutDashboard className="w-4 h-4" /> Dashboard
                       </Link>
-                      <Link to="/my-orders" onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
-                        <Package className="w-4 h-4" /> My Orders
-                      </Link>
+                      {user.role !== "admin" && (
+                        <Link to="/my-orders" onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
+                          <Package className="w-4 h-4" /> My Orders
+                        </Link>
+                      )}
                       {user.role === "admin" && (
                         <Link to="/product/create" onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-green-700 hover:bg-green-50 rounded-xl transition-colors">
                           <PlusCircle className="w-4 h-4" /> New Product
                         </Link>
                       )}
-                      <Link to="/account/profile" onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
+                      <Link to={user.role === "admin" ? "/admin/dashboard" : "/account/profile"} onClick={() => setShowDropdown(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
                         <User className="w-4 h-4" /> Profile
                       </Link>
                       <div className="h-px bg-gray-100 my-1" />
@@ -157,7 +158,7 @@ export default function Navbar() {
               </button>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) { navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setIsOpen(false); }}} className="mb-6">
+            <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) { navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setIsOpen(false); } }} className="mb-6">
               <div className="relative">
                 <input
                   type="text"
@@ -176,8 +177,10 @@ export default function Navbar() {
               {[
                 { name: "Home", path: "/" },
                 { name: "Shop All Products", path: "/products/all" },
-                { name: "My Orders", path: "/my-orders" },
-                { name: "Cart", path: "/cart" },
+                ...(user?.role !== "admin" ? [
+                  { name: "My Orders", path: "/my-orders" },
+                  { name: "Cart", path: "/cart" },
+                ] : []),
               ].map((link) => (
                 <Link key={link.name} to={link.path} onClick={() => setIsOpen(false)}
                   className="px-4 py-3 text-base font-bold text-primary hover:bg-gray-50 rounded-xl transition-colors">

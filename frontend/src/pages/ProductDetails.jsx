@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ShoppingCart, Minus, Plus, ChevronRight, MessageCircle, RefreshCw } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ShoppingCart, Minus, Plus, ChevronRight, MessageCircle, RefreshCw, Edit3, Star } from "lucide-react";
 import api from "../api/axios";
 import ProductImages from "../components/ProductImages";
 import { useCart } from "../context/Cart";
+import { useAuth } from "../context/AuthContext";
 import { Button, Toast } from "../components/ui";
+import ReviewSection from "../components/ReviewSection";
 import Product_Details_SkeletonLoader from "../components/Product_Details_SkeletonLoader";
 
 const ProductDetail = () => {
@@ -15,6 +17,9 @@ const ProductDetail = () => {
   const [error, setError] = useState("");
   const [toast, setToast] = useState(null);
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const isAdmin = user?.role === "admin";
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -119,6 +124,20 @@ const ProductDetail = () => {
                 )}
               </div>
 
+              {/* Rating */}
+              {product.reviewCount > 0 && (
+                <div className="flex items-center gap-1.5 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${i < Math.round(product.averageRating) ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}`}
+                    />
+                  ))}
+                  <span className="text-sm font-semibold text-gray-700 ml-1">{product.averageRating}</span>
+                  <span className="text-xs text-gray-400">({product.reviewCount} review{product.reviewCount !== 1 ? "s" : ""})</span>
+                </div>
+              )}
+
               {/* Title */}
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight">
                 {product.title}
@@ -189,29 +208,48 @@ const ProductDetail = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="flex-1"
-                  disabled={!inStock}
-                  onClick={handleAddToCart}
-                >
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  Add to Cart
-                </Button>
-                <a
-                  href={`https://wa.me/923001234567?text=Hi! I want to order ${quantity}kg of ${product.title} (Rs. ${(product.price * quantity).toLocaleString()})`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-full border-2 border-green-500 text-green-600 font-semibold hover:bg-green-500 hover:text-white transition-all text-sm"
-                >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  Order via WhatsApp
-                </a>
+                {!isAdmin ? (
+                  <>
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="flex-1"
+                      disabled={!inStock}
+                      onClick={handleAddToCart}
+                    >
+                      <ShoppingCart className="w-5 h-5 mr-2" />
+                      Add to Cart
+                    </Button>
+                    <a
+                      href={`https://wa.me/923001234567?text=Hi! I want to order ${quantity}kg of ${product.title} (Rs. ${(product.price * quantity).toLocaleString()})`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center px-6 py-3 rounded-full border-2 border-green-500 text-green-600 font-semibold hover:bg-green-500 hover:text-white transition-all text-sm"
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      Order via WhatsApp
+                    </a>
+                  </>
+                ) : (
+                  <Button
+                    variant="accent"
+                    size="lg"
+                    className="flex-1"
+                    onClick={() => navigate(`/product/update/${product._id}`)}
+                  >
+                    <Edit3 className="w-5 h-5 mr-2" />
+                    Edit Product
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Reviews */}
+      <div className="max-w-7xl mx-auto px-4 pb-12">
+        <ReviewSection productId={id} />
       </div>
     </div>
   );

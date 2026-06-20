@@ -4,7 +4,7 @@ const createProductSchema = z.object({
     body: z.object({
         title: z.string().min(3, "Title must be at least 3 characters").max(100),
         urdu_name: z.string().min(1, "Urdu name is required"),
-        description: z.string().min(10, "Description must be at least 10 characters"),
+        description: z.string().min(3, "Description must be at least 3 characters"),
         price: z.preprocess((val) => Number(val), z.number().positive("Price must be positive")),
         inStock: z.preprocess((val) => val === "true" || val === true, z.boolean()),
         stock: z.preprocess((val) => Number(val), z.number().int().nonnegative("Stock cannot be negative")),
@@ -15,7 +15,7 @@ const updateProductSchema = z.object({
     body: z.object({
         title: z.string().min(3).max(100).optional(),
         urdu_name: z.string().optional(),
-        description: z.string().min(10).optional(),
+        description: z.string().min(3).optional(),
         price: z.preprocess((val) => (val === undefined ? undefined : Number(val)), z.number().positive().optional()),
         inStock: z.preprocess((val) => (val === undefined ? undefined : val === "true" || val === true), z.boolean().optional()),
         stock: z.preprocess((val) => (val === undefined ? undefined : Number(val)), z.number().int().nonnegative().optional()),

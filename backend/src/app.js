@@ -39,11 +39,13 @@ app.use(express.json({ limit: "16kb" }));
 import userRoutes from "./route/user.route.js";
 import productRoutes from "./route/product.route.js";
 import orderRoutes from "./route/order.route.js";
+import reviewRoutes from "./route/review.route.js";
 
 // Routes
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/order", orderRoutes);
+app.use("/api/v1/review", reviewRoutes);
 
 // Global Error Handler (should be the last middleware)
 app.use(errorHandler);

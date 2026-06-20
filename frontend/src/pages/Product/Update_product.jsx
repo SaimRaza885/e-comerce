@@ -1,26 +1,19 @@
-// src/pages/UpdateProduct.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Edit3, Package } from "lucide-react";
 import api from "../../api/axios";
-import BackArrow from "../../components/BackArrow";
+import { Button, Spinner } from "../../components/ui";
 
 const UpdateProduct = () => {
   const { id } = useParams();
-  const [formData, setFormData] = useState({
-    title: "",
-    urdu_name: "",
-    description: "",
-    price: "",
-    inStock: true,
-    stock: "",
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    title: "", urdu_name: "", description: "", price: "", inStock: true, stock: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const navigate = useNavigate()
 
-  // Fetch existing product
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
@@ -28,7 +21,7 @@ const UpdateProduct = () => {
       try {
         const res = await api.get(`/product/${id}`);
         const prod = res.data.data;
-        setFormData({
+        setForm({
           title: prod.title || "",
           urdu_name: prod.urdu_name || "",
           description: prod.description || "",
@@ -47,22 +40,17 @@ const UpdateProduct = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setError("");
-    setSuccess("");
-
     try {
-      const res = await api.put(`/product/update/${id}`, formData);
-      setSuccess("Product updated successfully!");
-      navigate("/admin/dashboard")
+      await api.put(`/product/update/${id}`, form);
+      navigate("/admin/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update product");
     } finally {
@@ -70,110 +58,77 @@ const UpdateProduct = () => {
     }
   };
 
-  if (loading) return <div className="text-center py-20">Loading product...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center">Update Product</h2>
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>
-      )}
-      {success && (
-        <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">{success}</div>
-      )}
-<BackArrow/>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Title</label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          />
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
+            <Edit3 className="w-6 h-6 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Update Product</h1>
+          <p className="text-sm text-gray-500 mt-1">Edit product details</p>
         </div>
 
-        {/* Urdu Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Urdu Name</label>
-          <input
-            type="text"
-            name="urdu_name"
-            value={formData.urdu_name}
-            onChange={handleChange}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          />
-        </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          {error && (
+            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium">
+              {error}
+            </div>
+          )}
 
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows="4"
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <input name="title" value={form.title} onChange={handleChange}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Urdu Name *</label>
+                <input name="urdu_name" value={form.urdu_name} onChange={handleChange}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              </div>
+            </div>
 
-        {/* Price */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Price</label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            min="0"
-            step="0.01"
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea name="description" rows={3} value={form.description} onChange={handleChange}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+            </div>
 
-        {/* Stock */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Stock Quantity</label>
-          <input
-            type="number"
-            name="stock"
-            value={formData.stock}
-            onChange={handleChange}
-            min="0"
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-            required
-          />
-        </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Price (per kg) *</label>
+                <input type="number" name="price" min="0" step="0.01" value={form.price} onChange={handleChange} placeholder="0.00"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity *</label>
+                <input type="number" name="stock" min="0" value={form.stock} onChange={handleChange} placeholder="0"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+              </div>
+            </div>
 
-        {/* In Stock Checkbox */}
-        <div>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="inStock"
-              checked={formData.inStock}
-              onChange={handleChange}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-            />
-            <span className="text-sm text-gray-700">In Stock</span>
-          </label>
-        </div>
+            <label className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-lg cursor-pointer">
+              <input type="checkbox" name="inStock" checked={form.inStock} onChange={handleChange}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary/20" />
+              <span className="text-sm font-medium text-gray-700">In Stock</span>
+            </label>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          {saving ? "Updating..." : "Update Product"}
-        </button>
-      </form>
+            <Button type="submit" loading={saving} className="w-full" size="lg" icon={<Edit3 className="w-4 h-4" />}>
+              {saving ? "Updating..." : "Update Product"}
+            </Button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

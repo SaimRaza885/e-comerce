@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, LogIn } from "lucide-react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { Button, Input } from "../components/ui";
@@ -39,6 +39,9 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center p-6">
       <div className="w-full max-w-md">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary transition-colors mb-4">
+          <ArrowLeft className="w-4 h-4" /> Back to Home
+        </Link>
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Logo scrolled={true} />

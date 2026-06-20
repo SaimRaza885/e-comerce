@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { UserPlus } from "lucide-react";
+import { ArrowLeft, UserPlus } from "lucide-react";
 import api from "../api/axios";
 import { Button, Input } from "../components/ui";
 import Logo from "../components/Logo";
@@ -50,6 +50,9 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center p-6">
       <div className="w-full max-w-md">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary transition-colors mb-4">
+          <ArrowLeft className="w-4 h-4" /> Back to Home
+        </Link>
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Logo scrolled={true} />

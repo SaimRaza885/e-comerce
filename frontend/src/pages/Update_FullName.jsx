@@ -1,29 +1,30 @@
-import React, { useState } from 'react';
-import api from '../api/axios'; // Adjust this path as needed
-import { createPortal } from 'react-dom';
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { X } from "lucide-react";
+import api from "../api/axios";
+import { Button } from "../components/ui";
 
 const UpdateFullName = ({ id, isOpen, onClose }) => {
-  const [fullName, setFullName] = useState('');
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (isOpen) setFullName("");
+    setMessage("");
+  }, [isOpen]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    if (!fullName.trim()) return;
     setLoading(true);
-    setMessage('');
-
+    setMessage("");
     try {
-      const response = await api.put(`user/update/${id}`, { fullName }, {
-        withCredentials: true,
-      });
-
-      setMessage('Full name updated successfully!');
-      setTimeout(() => {
-        onClose(); // Close modal after success
-      }, 1500);
+      await api.put(`user/update/${id}`, { fullName }, { withCredentials: true });
+      setMessage("Full name updated!");
+      setTimeout(() => { onClose(); window.location.reload(); }, 1200);
     } catch (err) {
-      console.error('Error updating full name:', err);
-      setMessage('Failed to update full name.');
+      setMessage(err.response?.data?.message || "Failed to update");
     } finally {
       setLoading(false);
     }
@@ -32,9 +33,17 @@ const UpdateFullName = ({ id, isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 transition-opacity duration-300">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md transform transition-all duration-300 scale-100">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Update Full Name</h2>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-xl border border-gray-200 shadow-xl p-6 w-full max-w-sm relative animate-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute top-3 right-3 p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+          <X className="w-4 h-4" />
+        </button>
+
+        <h2 className="text-lg font-bold text-gray-900 mb-1">Change Name</h2>
+        <p className="text-sm text-gray-500 mb-5">Update your full name</p>
 
         <form onSubmit={handleUpdate} className="space-y-4">
           <input
@@ -42,27 +51,19 @@ const UpdateFullName = ({ id, isOpen, onClose }) => {
             placeholder="Enter new full name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             required
           />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
-          >
-            {loading ? 'Updating...' : 'Update'}
-          </button>
+          <Button type="submit" loading={loading} className="w-full" size="md">
+            {loading ? "Updating..." : "Update"}
+          </Button>
         </form>
 
-        {message && <p className="mt-4 text-center text-sm text-gray-600">{message}</p>}
-
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-        >
-          ×
-        </button>
+        {message && (
+          <p className={`mt-3 text-center text-sm font-medium ${message.includes("success") || message.includes("updated") ? "text-green-600" : "text-red-600"}`}>
+            {message}
+          </p>
+        )}
       </div>
     </div>,
     document.body

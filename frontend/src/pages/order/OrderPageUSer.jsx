@@ -17,10 +17,11 @@ const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (user?.role === "admin") { navigate("/admin/dashboard", { replace: true }); return; }
     if (!accessToken) {
       navigate("/login");
       return;

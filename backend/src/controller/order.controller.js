@@ -6,6 +6,9 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 // 🟢 Create Order
 export const createOrder = asyncHandler(async (req, res) => {
+  if (req.user?.role === "admin") {
+    throw new ApiError(403, "Admins cannot place orders");
+  }
   const { Name, phone, country, city, street, items } = req.body;
 
   let totalPrice = 0;

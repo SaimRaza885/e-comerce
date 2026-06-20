@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from "lucide-react";
 import { useCart } from "../../context/Cart";
+import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui";
 import PriceTag from "../../components/PriceTag";
 
 const Cart = () => {
   const { cartItems, updateQuantity, removeFromCart, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === "admin") navigate("/admin/dashboard", { replace: true });
+  }, [user, navigate]);
   const [removingId, setRemovingId] = useState(null);
 
   const handleRemove = (id) => {
@@ -71,6 +77,11 @@ const Cart = () => {
                         <h2 className="text-base font-semibold text-gray-900 mb-0.5">{item.title}</h2>
                         {item.urdu_name && <p className="text-xs text-gray-500 mb-1">{item.urdu_name}</p>}
                         <p className="text-sm font-semibold text-gray-700">Rs. {item.price.toLocaleString()} / kg</p>
+                        <span className={`inline-block mt-1 text-[11px] font-medium ${
+                          item.stock > 5 ? "text-green-600" : item.stock > 0 ? "text-amber-600" : "text-red-500"
+                        }`}>
+                          {item.stock > 5 ? "In Stock" : item.stock > 0 ? `Only ${item.stock} left` : "Out of Stock"}
+                        </span>
                       </div>
                       <button
                         onClick={() => handleRemove(item._id)}
@@ -92,7 +103,8 @@ const Cart = () => {
                         <span className="w-8 text-center font-semibold text-gray-900 text-sm">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-100 rounded-r-lg transition-colors"
+                          disabled={item.quantity >= item.stock}
+                          className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-100 rounded-r-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -100,6 +112,9 @@ const Cart = () => {
                       <div className="text-right">
                         <p className="text-xs text-gray-400 mb-0.5">Subtotal</p>
                         <p className="text-sm font-bold text-gray-900">Rs. {(item.price * item.quantity).toLocaleString()}</p>
+                        {item.quantity >= item.stock && (
+                          <p className="text-[10px] text-amber-600 font-medium mt-0.5">Max</p>
+                        )}
                       </div>
                     </div>
                   </div>

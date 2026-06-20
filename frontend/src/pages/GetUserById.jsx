@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, User, Shield, Calendar, Edit3, Lock, LayoutDashboard, RefreshCw, UserCircle } from "lucide-react";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 import UpdateFullName from "./Update_FullName";
 import { Button, Spinner } from "../components/ui";
 import AccountSidebar from "../components/AccountSidebar";
 
 export default function ProfilePage() {
+  const { user: authUser } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authUser?.role === "admin") navigate("/admin/dashboard", { replace: true });
+  }, [authUser, navigate]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

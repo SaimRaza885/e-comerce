@@ -1,17 +1,22 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ShoppingCart, Eye } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ShoppingCart, Edit3, Star } from "lucide-react";
 import { useCart } from "../context/Cart";
+import { useAuth } from "../context/AuthContext";
 
 const ProductCard = ({ product, search = false }) => {
   const [imgError, setImgError] = useState(false);
   const { addToCart, cartItems } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const isAdmin = user?.role === "admin";
   const imageUrl = product.images?.[0]?.url;
   const inCart = cartItems.some((item) => item._id === product._id);
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isAdmin) return;
     addToCart(product, 1);
   };
 
@@ -34,13 +39,23 @@ const ProductCard = ({ product, search = false }) => {
             </div>
           )}
 
-          {/* Quick add button (appears on hover) */}
-          {!search && product.inStock && (
+          {/* Quick add button (appears on hover) — hidden for admin */}
+          {!search && !isAdmin && product.inStock && (
             <button
               onClick={handleQuickAdd}
               className="absolute bottom-2 right-2 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-accent hover:text-primary"
             >
               <ShoppingCart className={`w-4 h-4 ${inCart ? "text-accent" : "text-primary"}`} />
+            </button>
+          )}
+
+          {/* Edit button for admin */}
+          {!search && isAdmin && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/product/update/${product._id}`); }}
+              className="absolute bottom-2 right-2 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-amber-100"
+            >
+              <Edit3 className="w-4 h-4 text-amber-600" />
             </button>
           )}
 
@@ -70,8 +85,15 @@ const ProductCard = ({ product, search = false }) => {
             <div>
               <span className="text-lg font-black text-primary">Rs. {product.price?.toLocaleString()}</span>
               <span className="text-[10px] text-gray-400 ml-1">/kg</span>
+              {product.reviewCount > 0 && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <span className="text-[11px] font-semibold text-gray-700">{product.averageRating}</span>
+                  <span className="text-[10px] text-gray-400">({product.reviewCount})</span>
+                </div>
+              )}
             </div>
-            {!search && product.inStock && (
+            {!search && !isAdmin && product.inStock && (
               <button
                 onClick={handleQuickAdd}
                 className="flex items-center gap-1 px-3 py-1.5 bg-accent/10 text-accent text-xs font-bold rounded-lg hover:bg-accent hover:text-primary transition-all"
@@ -79,7 +101,15 @@ const ProductCard = ({ product, search = false }) => {
                 <ShoppingCart className="w-3 h-3" /> Add
               </button>
             )}
-            {!search && !product.inStock && (
+            {!search && isAdmin && (
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/product/update/${product._id}`); }}
+                className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 text-amber-600 text-xs font-bold rounded-lg hover:bg-amber-100 transition-all"
+              >
+                <Edit3 className="w-3 h-3" /> Edit
+              </button>
+            )}
+            {!search && !isAdmin && !product.inStock && (
               <span className="text-xs text-gray-300 font-medium">Unavailable</span>
             )}
           </div>

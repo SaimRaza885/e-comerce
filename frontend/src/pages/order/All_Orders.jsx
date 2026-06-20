@@ -1,21 +1,20 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
-import OrderCard from "../../components/OrderStatusCard";
-import { saveAs } from "file-saver";
-import { Calendar, Download, RefreshCw, Search, Trash2, Eye } from "lucide-react";
-import { Button, Spinner } from "../../components/ui";
+import { Download, RefreshCw, Search, Trash2 } from "lucide-react";
+import { Button, Spinner, Badge } from "../../components/ui";
 
-const statusVariant = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  shipped: "bg-blue-50 text-blue-700 border-blue-200",
-  delivered: "bg-green-50 text-green-700 border-green-200",
-  canceled: "bg-red-50 text-red-700 border-red-200",
+const statusColors = {
+  pending: "warning",
+  shipped: "info",
+  delivered: "success",
+  canceled: "danger",
 };
 
 const OrdersList = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [updating, setUpdating] = useState(null);
   const [filter, setFilter] = useState({ search: "", sort: "newest", startDate: "", endDate: "" });
   const [lastUpdated, setLastUpdated] = useState(null);
 
@@ -34,6 +33,18 @@ const OrdersList = () => {
       setError(err.response?.data?.message || "Failed to fetch orders");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (id, status) => {
+    setUpdating(id);
+    try {
+      await api.put(`order/update/${id}`, { status });
+      setOrders((prev) => prev.map((o) => (o._id === id ? { ...o, status } : o)));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setUpdating(null);
     }
   };
 
@@ -142,9 +153,7 @@ const OrdersList = () => {
             {filteredOrders.map((order) => (
               <div key={order._id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusVariant[order.status] || "bg-gray-50 text-gray-700 border-gray-200"}`}>
-                    {order.status}
-                  </span>
+                  <Badge variant={statusColors[order.status] || "primary"}>{order.status}</Badge>
                   <span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="space-y-1.5 mb-4 text-sm">
@@ -154,16 +163,29 @@ const OrdersList = () => {
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                   <span className="text-lg font-bold text-primary">Rs. {(order.totalPrice || 0).toLocaleString()}</span>
-                  <button onClick={() => handleDelete(order._id)} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex gap-2">
+                    <select
+                      value={order.status}
+                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                      disabled={updating === order._id}
+                      className="px-2 py-1.5 text-xs font-medium border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="canceled">Canceled</option>
+                    </select>
+                    <button onClick={() => handleDelete(order._id)} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-16">
-            <Eye className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">No orders match your filters.</p>
           </div>
         )}

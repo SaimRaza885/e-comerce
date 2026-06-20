@@ -1,5 +1,6 @@
 // src/context/Cart.js
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
 
@@ -7,6 +8,9 @@ const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem("cart");
     return savedCart ? JSON.parse(savedCart) : [];
@@ -14,11 +18,22 @@ export const CartProvider = ({ children }) => {
 
   // Save cart in localStorage
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
+    if (!isAdmin) {
+      localStorage.setItem("cart", JSON.stringify(cartItems));
+    }
+  }, [cartItems, isAdmin]);
 
-  // ✅ Add item to cart (capped to available stock)
+  // Clear cart if admin
+  useEffect(() => {
+    if (isAdmin) {
+      setCartItems([]);
+      localStorage.removeItem("cart");
+    }
+  }, [isAdmin]);
+
+  // ✅ Add item to cart (capped to available stock, blocked for admin)
   const addToCart = (product, quantity = 1) => {
+    if (isAdmin) return;
     setCartItems((prev) => {
       const existing = prev.find((item) => item._id === product._id);
       const maxStock = product.stock ?? Infinity;
