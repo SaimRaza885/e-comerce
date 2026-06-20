@@ -16,34 +16,24 @@ app.use(helmet()); // Set security HTTP headers
 app.use(morgan("dev")); // HTTP request logger
 app.use(limiter); // Rate limiting
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:5173",              // local dev
-  "https://dry-fruits-gb.vercel.app",   // deployed frontend
-  "http://localhost:3000"
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow Postman, curl, etc.
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://dry-fruits-gb.vercel.app",
+    "http://localhost:3000",
+    process.env.FRONTEND_URL,
+  ].filter(Boolean),
+  credentials: true,
+}));
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.json({ limit: "16kb" }));
 
-// 🛡️ Data Sanitization
-app.use(mongoSanitize()); // Against NoSQL query injection
-app.use(xss()); // Against XSS
-app.use(hpp()); // Against HTTP Parameter Pollution
+// Disabled for Express 5 compatibility (read-only req.query)
+// app.use(mongoSanitize());
+// app.use(xss());
+// app.use(hpp());
 
 // Routes import
 import userRoutes from "./route/user.route.js";

@@ -1,45 +1,34 @@
 import { useState } from "react";
-import { useCart } from "../../context/Cart";
-import { FiMapPin, FiPhone, FiCreditCard, FiUser } from "react-icons/fi";
-import { FaTruck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { ShoppingBag, Truck, CreditCard, MapPin, Phone, User } from "lucide-react";
+import { useCart } from "../../context/Cart";
 import api from "../../api/axios";
-import Logo from "../../components/Logo";
+import { Button, Input } from "../../components/ui";
 import PriceTag from "../../components/PriceTag";
-import Small_Banner from "../../components/Small_Banner";
 
 const Checkout = () => {
   const { cartItems, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    phone: "",
-    country: "",
-    city: "",
-    street: "",
-    Name: "",
+    Name: "", phone: "", country: "", city: "", street: "",
   });
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState({ visible: false, message: "", type: "" });
 
-  const shippingFee = 200;
-
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.Name || !form.phone || !form.country || !form.city || !form.street) {
+      setPopup({ visible: true, message: "Please fill all fields.", type: "error" });
+      return;
+    }
     setLoading(true);
 
     try {
-      if (!form.phone || !form.Name || !form.country || !form.city || !form.street) {
-        setPopup({ visible: true, message: "Please fill all fields.", type: "error" });
-        setLoading(false);
-        return;
-      }
-
       await api.post("/order/create", {
         ...form,
         items: cartItems.map((item) => ({
@@ -48,7 +37,6 @@ const Checkout = () => {
         })),
       });
 
-      // Save locally too
       const newOrder = {
         id: Date.now(),
         date: new Date().toISOString(),
@@ -60,17 +48,12 @@ const Checkout = () => {
       localStorage.setItem("orders", JSON.stringify([...existing, newOrder]));
 
       clearCart();
-      setPopup({ visible: true, message: "✅ Order placed successfully!", type: "success" });
-
-      // Wait 2 seconds, then navigate
-      setTimeout(() => {
-        navigate("/my-orders");
-      }, 2000);
+      setPopup({ visible: true, message: "Order placed successfully!", type: "success" });
+      setTimeout(() => navigate("/my-orders"), 2000);
     } catch (err) {
-      console.error(err);
       setPopup({
         visible: true,
-        message: err.response?.data?.message || "❌ Failed to place order.",
+        message: err.response?.data?.message || "Failed to place order",
         type: "error",
       });
     } finally {
@@ -79,103 +62,137 @@ const Checkout = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gray-50 py-16 px-4">
-               <Small_Banner title={"Ceckout"} bgImage={Images.shop_image}   subtitle={"Review the items in your cart before checking out."} />
-   
-      {/* ✅ Fullscreen Loader Overlay */}
+    <div className="bg-gray-50 min-h-screen">
       {loading && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
-            <div className="w-6 h-6 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-            <span className="text-gray-700 font-semibold">Processing your order...</span>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl px-8 py-6 flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
+            <p className="text-sm font-semibold text-gray-900">Processing your order...</p>
           </div>
         </div>
       )}
 
-      {/* ✅ Success/Error Popup */}
       {popup.visible && (
-        <div
-          className={`fixed top-6 right-6 px-4 py-3 rounded-lg shadow-lg text-white z-50 transition-all duration-300 ${
-            popup.type === "success" ? "bg-green-600" : "bg-red-600"
-          }`}
-        >
+        <div className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-lg shadow-lg border font-medium text-sm transition-all ${
+          popup.type === "success" ? "bg-green-50 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"
+        }`}>
           {popup.message}
         </div>
       )}
 
-      <div className="flex items-center justify-center w-full mb-5 text-7xl">
-        <Logo size={20} />
-      </div>
-
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10">
+      <div className="max-w-7xl mx-auto px-4 py-8 grid lg:grid-cols-5 gap-8">
         {/* Shipping Form */}
-        <div className="bg-white p-8 rounded-xl shadow-md space-y-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Shipping Details</h2>
+        <div className="lg:col-span-3">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-secondary" />
+              Shipping Details
+            </h2>
 
-          <div className="space-y-4">
-            {[
-              { icon: <FiPhone />, name: "phone", placeholder: "Phone Number" },
-              { icon: <FiUser />, name: "Name", placeholder: "Customer Name" },
-              { icon: <FiMapPin />, name: "country", placeholder: "Country" },
-              { icon: <FiMapPin />, name: "city", placeholder: "City" },
-              { icon: <FiMapPin />, name: "street", placeholder: "Street Address" },
-            ].map((field) => (
-              <div key={field.name} className="flex items-center gap-2 border rounded px-3 py-2">
-                <span className="text-gray-400">{field.icon}</span>
-                <input
-                  type="text"
-                  name={field.name}
-                  placeholder={field.placeholder}
-                  value={form[field.name]}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input
+                  label="Full Name"
+                  name="Name"
+                  value={form.Name}
                   onChange={handleChange}
-                  className="w-full outline-none"
+                  placeholder="John Doe"
+                  icon={<User className="w-4 h-4" />}
+                  required
+                />
+                <Input
+                  label="Phone"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="+92 300 1234567"
+                  icon={<Phone className="w-4 h-4" />}
+                  required
                 />
               </div>
-            ))}
-          </div>
+              <Input
+                label="Country"
+                name="country"
+                value={form.country}
+                onChange={handleChange}
+                placeholder="Pakistan"
+                icon={<MapPin className="w-4 h-4" />}
+                required
+              />
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input
+                  label="City"
+                  name="city"
+                  value={form.city}
+                  onChange={handleChange}
+                  placeholder="Gilgit"
+                  required
+                />
+                <Input
+                  label="Street Address"
+                  name="street"
+                  value={form.street}
+                  onChange={handleChange}
+                  placeholder="House #, Street, Area"
+                  required
+                />
+              </div>
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-full font-semibold shadow-md transition mt-6"
-          >
-            <FiCreditCard className="text-xl" />
-            {loading ? "Processing..." : "Place Order"}
-          </button>
+              <Button
+                type="submit"
+                loading={loading}
+                icon={<CreditCard className="w-4 h-4" />}
+                className="w-full mt-6"
+                size="lg"
+              >
+                {loading ? "Processing..." : "Place Order"}
+              </Button>
+            </form>
+          </div>
         </div>
 
         {/* Order Summary */}
-        <div className="bg-white p-8 rounded-xl shadow-md flex flex-col justify-between h-full">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Order Summary</h2>
-            <div className="divide-y divide-gray-200">
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sticky top-28">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5 text-secondary" />
+              Order Summary
+            </h2>
+
+            <div className="space-y-3 mb-5">
               {cartItems.map((item) => (
-                <div key={item._id} className="flex justify-between py-4 items-center">
-                  <div>
-                    <p className="font-semibold text-gray-700">{item.title}</p>
-                    <p className="text-gray-500 text-sm">
-                      {item.quantity} x {item.price} PKR
-                    </p>
+                <div key={item._id} className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-white border border-gray-100 flex-shrink-0">
+                    <img
+                      src={item.images?.[0]?.url || ""}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <PriceTag price={item.price * item.quantity} size="md" isBlack />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
+                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                  </div>
+                  <p className="text-sm font-bold text-gray-900">Rs. {(item.price * item.quantity).toLocaleString()}</p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-4 flex justify-between text-gray-700">
-              <div className="flex gap-1 items-center">
-                <FaTruck /> <span>Shipping Fee:</span>
+            <div className="border-t border-gray-200 pt-4 space-y-2.5">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Subtotal</span>
+                <span className="font-semibold text-gray-900">Rs. {totalPrice.toLocaleString()}</span>
               </div>
-              <span className="flex items-center space-x-2 text-sm">
-                <del className="text-gray-400">{shippingFee} PKR</del>
-                <span className="text-green-600 font-semibold">Free</span>
-              </span>
+              <div className="flex justify-between text-sm">
+                <span className="flex items-center gap-1 text-gray-500"><Truck className="w-3.5 h-3.5" /> Shipping</span>
+                <span className="text-green-600 font-semibold">FREE</span>
+              </div>
+              <div className="h-px bg-gray-100" />
+              <div className="flex justify-between items-center pt-1">
+                <span className="font-semibold text-gray-900 text-sm">Total</span>
+                <span className="text-lg font-bold text-gray-900">Rs. {totalPrice.toLocaleString()}</span>
+              </div>
             </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-gray-200 flex justify-between font-bold text-gray-900 text-xl">
-            <span>Total:</span>
-            <PriceTag price={totalPrice} size="lg" />
           </div>
         </div>
       </div>

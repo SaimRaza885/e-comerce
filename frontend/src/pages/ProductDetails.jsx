@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { FiShoppingCart, FiMinus, FiPlus } from "react-icons/fi";
+import { Link, useParams } from "react-router-dom";
+import { ShoppingCart, Minus, Plus, ChevronRight, MessageCircle, RefreshCw } from "lucide-react";
 import api from "../api/axios";
 import ProductImages from "../components/ProductImages";
 import { useCart } from "../context/Cart";
-import Small_Banner from "../components/Small_Banner";
-import PriceTag from "../components/PriceTag";
+import { Button, Toast } from "../components/ui";
 import Product_Details_SkeletonLoader from "../components/Product_Details_SkeletonLoader";
 
 const ProductDetail = () => {
@@ -14,7 +13,8 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { addToCart } = useCart(); // use cart context
+  const [toast, setToast] = useState(null);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -23,7 +23,6 @@ const ProductDetail = () => {
       try {
         const res = await api.get(`/product/${id}`);
         setProduct(res.data.data);
-        console.log(res.data.message);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch product");
       } finally {
@@ -34,111 +33,180 @@ const ProductDetail = () => {
   }, [id]);
 
   const handleQuantityChange = (type) => {
-    if (type === "increment") setQuantity((q) => q + 1);
+    if (!product) return;
+    if (type === "increment") setQuantity((q) => Math.min(q + 1, product.stock));
     else if (type === "decrement" && quantity > 1) setQuantity((q) => q - 1);
   };
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
-    // alert(`${quantity} x ${product.title} added to cart!`);
+    setToast({ message: `${quantity} × ${product.title} added to cart!`, type: "success" });
   };
 
-  if (loading) return <Product_Details_SkeletonLoader />
+  if (loading) return <Product_Details_SkeletonLoader />;
 
   if (error)
     return (
-      <div className="text-center py-20 text-red-600">{error}</div>
+      <div className="pt-24 min-h-screen flex items-center justify-center bg-cream/20">
+        <div className="text-center max-w-md px-6">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+            <RefreshCw className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Something went wrong</h2>
+          <p className="text-gray-500 mb-6">{error}</p>
+          <Button variant="primary" onClick={() => window.location.reload()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
     );
 
   if (!product) return null;
 
+  const inStock = product.inStock ?? product.stock > 0;
+
   return (
-    <div className="pt-24 min-h-screen bg-cream/20">
-      <div className="container mx-auto px-6 py-12">
-        <div className="flex flex-col lg:flex-row gap-16 items-start">
-          {/* Left: Product Images */}
-          <div className="lg:w-1/2 w-full animate-in fade-in slide-in-from-left duration-700">
-            <div className="bg-white rounded-[2.5rem] p-4 shadow-2xl border border-gray-100 overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Breadcrumbs */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <nav className="flex items-center gap-2 text-sm text-gray-500">
+            <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <Link to="/shop" className="hover:text-primary transition-colors">Shop</Link>
+            <ChevronRight className="w-3.5 h-3.5" />
+            <span className="text-gray-800 font-medium truncate max-w-[200px]">{product.title}</span>
+          </nav>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left: Images */}
+          <div className="lg:col-span-5">
+            <div className="bg-white rounded-xl border border-gray-200 p-2 lg:sticky lg:top-28">
               <ProductImages images={product.images || []} />
             </div>
           </div>
 
-          {/* Right: Product Info */}
-          <div className="lg:w-1/2 w-full flex flex-col gap-8 animate-in fade-in slide-in-from-right duration-700 delay-200">
-            <div>
-              <span className="text-secondary font-bold tracking-[0.2em] uppercase text-xs mb-3 block">Premium Selection</span>
-              <h1 className="text-4xl md:text-5xl font-black text-primary mb-2 leading-tight">
+          {/* Right: Info */}
+          <div className="lg:col-span-7">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 lg:p-8">
+              {/* Stock Badge */}
+              <div className="mb-4 flex items-center gap-3 flex-wrap">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                  inStock
+                    ? "bg-green-50 text-green-700 border border-green-200"
+                    : "bg-red-50 text-red-700 border border-red-200"
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${inStock ? "bg-green-500" : "bg-red-500"}`} />
+                  {inStock ? "In Stock" : "Out of Stock"}
+                </span>
+                {inStock && product.stock <= 10 && (
+                  <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                    Only {product.stock} left
+                  </span>
+                )}
+              </div>
+
+              {/* Title */}
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight">
                 {product.title}
               </h1>
               {product.urdu_name && (
-                <p className="text-2xl text-secondary font-medium leading-relaxed italic">
-                  {product.urdu_name}
-                </p>
+                <p className="text-lg text-gray-500 mb-4 font-medium">{product.urdu_name}</p>
               )}
-            </div>
 
-            <div className="flex items-center gap-6 py-6 border-y border-gray-100">
-              <PriceTag price={product.price} size="xl" unit="kg" isBlack={false} />
-              <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest ${product.inStock ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
-                }`}>
-                {product.inStock ? "In Stock" : "Temporarily Unavailable"}
+              {/* Price */}
+              <div className="flex items-baseline gap-3 mb-6">
+                <span className="text-3xl lg:text-4xl font-bold text-primary">
+                  Rs. {product.price.toLocaleString()}
+                </span>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <>
+                    <span className="text-lg text-gray-400 line-through">
+                      Rs. {product.originalPrice.toLocaleString()}
+                    </span>
+                    <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                      {Math.round((1 - product.price / product.originalPrice) * 100)}% OFF
+                    </span>
+                  </>
+                )}
+                <span className="text-sm text-gray-400">/ kg</span>
               </div>
-            </div>
 
-            <div>
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Description</h3>
-              <p className="text-gray-700 leading-relaxed text-lg font-medium">
-                {product.description || "Indulge in the finest organic dry fruits, handpicked from the pristine Gilgit valleys. Each piece is a burst of natural flavor and high-density nutrients, perfect for a refined healthy lifestyle."}
-              </p>
-            </div>
-
-            {/* Quantity & Actions */}
-            <div className="glass p-8 rounded-[2rem] shadow-xl border border-white/50 flex flex-col gap-8">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-primary">Select Quantity (kg)</span>
-                <div className="flex items-center gap-6 bg-white border border-gray-100 p-2 rounded-2xl shadow-inner">
-                  <button
-                    onClick={() => handleQuantityChange("decrement")}
-                    className="w-10 h-10 flex items-center justify-center bg-cream text-secondary rounded-xl hover:bg-secondary hover:text-white transition-all disabled:opacity-30"
-                    disabled={quantity <= 1}
-                  >
-                    <FiMinus />
-                  </button>
-                  <span className="text-xl font-black text-primary min-w-[20px] text-center">{quantity}</span>
-                  <button
-                    onClick={() => handleQuantityChange("increment")}
-                    className="w-10 h-10 flex items-center justify-center bg-primary text-white rounded-xl hover:bg-secondary transition-all"
-                  >
-                    <FiPlus />
-                  </button>
+              {/* Short Description */}
+              {product.description && (
+                <div className="mb-6">
+                  <p className="text-gray-600 leading-relaxed">{product.description}</p>
                 </div>
-              </div>
+              )}
 
-              <div className="flex justify-between items-center py-4 border-t border-gray-100/50">
-                <span className="text-gray-500 font-bold uppercase tracking-widest text-xs">Total Amount</span>
-                <div className="text-3xl font-black text-primary">
-                  <PriceTag price={product.price * quantity} size="lg" />
+              {/* Quantity Selector */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-700">Quantity (kg)</span>
+                  <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg">
+                    <button
+                      onClick={() => handleQuantityChange("decrement")}
+                      className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-50 rounded-l-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      disabled={quantity <= 1}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-8 text-center font-semibold text-gray-900 text-sm">{quantity}</span>
+                    <button
+                      onClick={() => handleQuantityChange("increment")}
+                      className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-50 rounded-r-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      disabled={quantity >= product.stock}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                  <span className="text-sm text-gray-500">Total</span>
+                  <span className="text-xl font-bold text-primary">Rs. {(product.price * quantity).toLocaleString()}</span>
+                </div>
+                {inStock && (
+                  <p className="text-xs text-gray-400 mt-2">
+                    {quantity >= product.stock
+                      ? "Maximum available quantity reached"
+                      : `${product.stock - quantity} kg remaining`}
+                  </p>
+                )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="flex-1"
+                  disabled={!inStock}
                   onClick={handleAddToCart}
-                  className="flex-1 btn-premium py-5 text-lg group bg-primary"
-                  disabled={!product.inStock}
                 >
-                  <FiShoppingCart className="mr-3 text-xl" />
-                  Add To Cart
-                </button>
-
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Add to Cart
+                </Button>
                 <a
-                  href={`https://wa.me/923001234567?text=Hi! I want to order ${quantity} x ${product.title}`}
+                  href={`https://wa.me/923001234567?text=Hi! I want to order ${quantity}kg of ${product.title} (Rs. ${(product.price * quantity).toLocaleString()})`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="sm:px-8 py-5 rounded-full border-2 border-green-500 text-green-600 font-bold hover:bg-green-500 hover:text-white transition-all flex items-center justify-center gap-3"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full border-2 border-green-500 text-green-600 font-semibold hover:bg-green-500 hover:text-white transition-all text-sm"
                 >
-                  <FiShoppingCart className="text-xl" />
-                  WhatsApp
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  Order via WhatsApp
                 </a>
               </div>
             </div>

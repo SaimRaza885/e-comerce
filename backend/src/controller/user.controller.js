@@ -197,6 +197,11 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Invalid refresh token");
     }
 
+    // Rotate refresh token: issue new one, invalidate old one
+    const newRefreshToken = user.generateRefreshToken();
+    user.refreshToken = newRefreshToken;
+    await user.save({ validateBeforeSave: false });
+
     const accessToken = user.generateAccessToken();
 
     const options = {
@@ -207,6 +212,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
     return res
       .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", newRefreshToken, { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 })
       .status(200)
       .json(new ApiResponse(200, { accessToken }, "New access token issued"));
   } catch (error) {

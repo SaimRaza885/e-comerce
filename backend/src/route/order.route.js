@@ -3,9 +3,11 @@ import {
     createOrder,
     getAllOrders,
     updateOrderStatus,
-    Delete_Order, // renamed for consistency
+    Delete_Order,
+    getMyOrders,
 } from "../controller/order.controller.js";
-import verifyJWT from "../middleware/verifyAdmin.middleware.js"; // assuming it handles role checking
+import verifyJWT from "../middleware/verifyAdmin.middleware.js";
+import optionalAuth from "../middleware/optionalAuth.middleware.js";
 import { validate } from "../middleware/validate.middleware.js";
 import { createOrderSchema } from "../validations/order.validation.js";
 
@@ -13,11 +15,13 @@ const router = express.Router();
 
 // ------------------- User Routes -------------------
 
-// Create a new order
-router.post("/create", validate(createOrderSchema), createOrder);
+// Create a new order (optional auth — attaches user if logged in)
+router.post("/create", optionalAuth, validate(createOrderSchema), createOrder);
 
+// Get current user's orders
+router.get("/me", verifyJWT(), getMyOrders);
 
-// Delete/cancel an order (only by owner)
+// Delete/cancel an order (admin only)
 router.delete("/delete/:id", verifyJWT("admin"), Delete_Order);
 
 // ------------------- Admin Routes -------------------

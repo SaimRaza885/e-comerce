@@ -1,40 +1,33 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios"; // your axios instance
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import BackArrow from "../components/BackArrow";
+import { UserPlus } from "lucide-react";
+import api from "../api/axios";
+import { Button, Input } from "../components/ui";
+import Logo from "../components/Logo";
 
 export default function Register() {
   const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-    role: "user",
-    adminSecret: "",
+    fullName: "", email: "", password: "", role: "user", adminSecret: "",
   });
-  const navigate = useNavigate()
-  // const [avatar, setAvatar] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  // const handleFile = (e) => {
-  //   setAvatar(e.target.files[0]);
-  // };
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (localStorage.getItem("accessToken")) {
-      alert("please Logout First")
-      navigate("/logout")
+      navigate("/logout");
     }
-  }, [])
+  }, [navigate]);
+
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage(null);
+    setError("");
 
     try {
       const formData = new FormData();
@@ -42,105 +35,113 @@ export default function Register() {
         if (value) formData.append(key, value);
       });
 
-      const res = await api.post("/user/register", formData, {
+      await api.post("/user/register", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setMessage(res.data.message || "Registered successfully!");
-
-      navigate("/login")
+      navigate("/login");
     } catch (err) {
-      setMessage(
-        err.message || "Something went wrong, try again."
-      );
+      setError(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <BackArrow />
-      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6">
-        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
-          Create Account
-        </h2>
+    <div className="min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <Logo scrolled={true} />
+          </div>
+          <h1 className="text-3xl font-black text-primary">Create Account</h1>
+          <p className="text-secondary mt-1">Join our dry fruits family</p>
+        </div>
 
-        {message && (
-          <div className="mb-4 text-sm text-center text-blue-600">{message}</div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="fullName"
-            value={form.fullName}
-            onChange={handleChange}
-            placeholder="Full Name"
-            className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Email"
-            className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="Password"
-            className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
-            required
-          />
-
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="w-full p-3 pr-4 border rounded-lg focus:ring focus:ring-blue-300"
-          >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-
-          {form.role === "admin" && (
-            <input
-              type="password"
-              name="adminSecret"
-              value={form.adminSecret}
-              onChange={handleChange}
-              placeholder="Admin Secret"
-              className="w-full p-3 border rounded-lg focus:ring focus:ring-red-300"
-            />
+        <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-100 p-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium text-center">
+              {error}
+            </div>
           )}
-          {/* 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFile}
-            className="w-full p-2 border rounded-lg"
-          /> */}
-          <p className="mt-4 text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 hover:underline">
-              Login
-            </Link>
-          </p>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-          >
-            {loading ? "Registering..." : "Register"}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Full Name"
+              type="text"
+              name="fullName"
+              value={form.fullName}
+              onChange={handleChange}
+              placeholder="John Doe"
+              required
+            />
+
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="your@email.com"
+              required
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="Min. 6 characters"
+              required
+            />
+
+            <div>
+              <label className="block text-sm font-bold text-primary mb-1.5 tracking-wide uppercase">
+                Account Type
+              </label>
+              <select
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-primary outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+              >
+                <option value="user">Customer</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            {form.role === "admin" && (
+              <Input
+                label="Admin Secret"
+                type="password"
+                name="adminSecret"
+                value={form.adminSecret}
+                onChange={handleChange}
+                placeholder="Enter admin secret code"
+              />
+            )}
+
+            <Button
+              type="submit"
+              loading={loading}
+              icon={<UserPlus className="w-4 h-4" />}
+              className="w-full"
+              size="lg"
+            >
+              {loading ? "Creating account..." : "Create Account"}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-500">
+              Already have an account?{" "}
+              <Link to="/login" className="text-accent font-bold hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

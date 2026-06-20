@@ -1,50 +1,64 @@
 import { useEffect, useState } from "react";
-import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
-import Logo from "../components/Logo";
-import BackArrow from "../components/BackArrow";
+import { LogOut } from "lucide-react";
+import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { Button } from "../components/ui";
+import Logo from "../components/Logo";
 
 export default function LogoutButton() {
+  const [loading, setLoading] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!localStorage.getItem("accessToken")) {
+      navigate("/");
+    }
+  }, [navigate]);
 
-    const [loading, setLoading] = useState(false)
-    const Navigate = useNavigate()
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await api.post("/user/logout", {}, { withCredentials: true });
+      logout();
+      navigate("/");
+    } catch {
+      logout();
+      navigate("/");
+    }
+  };
 
-    const { logout } = useAuth();
-
-    const handleLogout = async () => {
-        try {
-            setLoading(true)
-            await api.post("/user/logout", {}, { withCredentials: true }); // call backend logout
-            logout() // clear local storage token and cart
-            setLoading(false)
-            Navigate("/")
-        } catch (err) {
-            console.error("Logout failed:", err.response?.data || err.message);
-        }
-    };
-
-    return (
-
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-         <BackArrow/>
-            <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6">
-                <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
-                    Logout
-                </h2>
-
-
-                <button
-                    onClick={handleLogout}
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-                >
-                    {loading ? "Logout..." : "Logout"}
-                </button>
-            </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center p-6">
+      <div className="w-full max-w-sm text-center">
+        <div className="flex justify-center mb-6">
+          <Logo scrolled={true} />
         </div>
-
-    );
+        <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-100 p-8">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <LogOut className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-black text-primary mb-2">Leave so soon?</h2>
+          <p className="text-secondary text-sm mb-6">You'll need to sign in again to access your account.</p>
+          <Button
+            onClick={handleLogout}
+            loading={loading}
+            variant="danger"
+            size="lg"
+            className="w-full"
+            icon={<LogOut className="w-4 h-4" />}
+          >
+            {loading ? "Signing out..." : "Yes, Log Me Out"}
+          </Button>
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-4 text-sm text-gray-400 hover:text-primary font-bold transition-colors"
+          >
+            Never mind, go back
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

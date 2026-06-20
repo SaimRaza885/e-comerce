@@ -17,20 +17,18 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // ✅ Add item to cart
+  // ✅ Add item to cart (capped to available stock)
   const addToCart = (product, quantity = 1) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item._id === product._id);
+      const maxStock = product.stock ?? Infinity;
       if (existing) {
-        // If product already in cart → update quantity
+        const newQty = Math.min(existing.quantity + quantity, maxStock);
         return prev.map((item) =>
-          item._id === product._id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+          item._id === product._id ? { ...item, quantity: newQty } : item
         );
       } else {
-        // Add new product
-        return [...prev, { ...product, quantity }];
+        return [...prev, { ...product, quantity: Math.min(quantity, maxStock) }];
       }
     });
   };
@@ -40,12 +38,14 @@ export const CartProvider = ({ children }) => {
     setCartItems((prev) => prev.filter((item) => item._id !== productId));
   };
 
-  // ✅ Update quantity manually
+  // ✅ Update quantity manually (capped to stock)
   const updateQuantity = (productId, quantity) => {
     setCartItems((prev) =>
-      prev.map((item) =>
-        item._id === productId ? { ...item, quantity } : item
-      )
+      prev.map((item) => {
+        if (item._id !== productId) return item;
+        const maxQty = item.stock ?? Infinity;
+        return { ...item, quantity: Math.max(1, Math.min(quantity, maxQty)) };
+      })
     );
   };
 

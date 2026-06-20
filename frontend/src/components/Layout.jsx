@@ -4,9 +4,11 @@ import Navbar from "./Navbar";
 const Layout = ({ children }) => (
   <>
     <Navbar />
-    {children}
-    <Footer/>
+    <main className="pt-[104px] min-h-screen">
+      {children}
+    </main>
+    <Footer />
   </>
 );
 
-export default Layout
+export default Layout;

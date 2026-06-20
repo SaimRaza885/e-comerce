@@ -1,114 +1,144 @@
-import React, { useState, useEffect } from "react";
-import { MapPin, Phone, Calendar, Trash2, Clock } from "lucide-react";
-import BackArrow from "../../components/BackArrow";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Package, Clock, Phone, MapPin, ShoppingBag } from "lucide-react";
+import api from "../../api/axios";
+import { Badge, Spinner, Button } from "../../components/ui";
+import { useAuth } from "../../context/AuthContext";
+import AccountSidebar from "../../components/AccountSidebar";
+
+const statusVariant = {
+  pending: "warning",
+  shipped: "info",
+  delivered: "success",
+  canceled: "danger",
+};
 
 const MyOrders = () => {
-    const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const { accessToken } = useAuth();
+  const navigate = useNavigate();
 
-    // Load orders from localStorage
-    useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem("orders") || "[]");
-        if (Array.isArray(saved)) {
-            const sorted = [...saved].sort((a, b) => new Date(b.date) - new Date(a.date));
-            setOrders(sorted);
-        }
-    }, []);
-
-    // Remove an order by ID
-    const handleRemove = (id) => {
-        const updated = orders.filter((order) => order.id !== id);
-        setOrders(updated);
-        localStorage.setItem("orders", JSON.stringify(updated));
+  useEffect(() => {
+    if (!accessToken) {
+      navigate("/login");
+      return;
+    }
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get("/order/me");
+        const data = Array.isArray(res.data.data) ? res.data.data : [];
+        setOrders(data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to fetch orders");
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchOrders();
+  }, [accessToken, navigate]);
 
+  if (loading) {
     return (
-        <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-8">
-            <BackArrow/>
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-                    My Orders
-                </h1>
-
-                {/* No Orders */}
-                {orders.length === 0 ? (
-                    <p className="text-center text-gray-500 mt-10">
-                        You haven’t placed any orders yet.
-                    </p>
-                ) : (
-                    <div className="space-y-6 grid  3 gap-5  md:grid-cols-2">
-                        {orders.map((order) => (
-                            <div
-                                key={order.id}
-                                className="bg-white rounded-2xl shadow-md p-5 hover:shadow-lg transition duration-200"
-                            >
-                                {/* Header */}
-                                <div className="flex justify-between items-center border-b pb-3 mb-3">
-
-                                    <div className="flex items-center gap-2 text-gray-600 text-sm">
-                                        <Clock size={16} className="text-yellow-600" />
-                                        <span>
-                                            {order.date
-                                                ? new Date(order.date).toLocaleString()
-                                                : "No Date Available"}
-                                        </span>
-                                    </div>
-                                    <button
-                                        onClick={() => handleRemove(order.id)}
-                                        className="flex items-center gap-1 text-red-500 text-sm hover:text-red-600 transition"
-                                    >
-                                        <Trash2 size={16} />
-                                        Remove
-                                    </button>
-                                </div>
-
-                                {/* Items */}
-                                <div className="space-y-2 mb-3">
-                                    {order.items?.map((item, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex justify-between text-sm text-gray-700 border-b pb-2"
-                                        >
-                                            <span className="font-medium">{item.title}</span>
-                                            <div className="text-right">
-                                                <span className="block">Quantity: {item.quantity}</span>
-                                                <span className="text-gray-500 text-xs">
-                                                    Rs {item.price?.toLocaleString()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Footer Info */}
-                                <div className="flex flex-col sm:flex-row justify-between text-sm text-gray-600 gap-2 mt-4">
-                                    <div className="flex items-center gap-1">
-                                        <Phone size={14} />
-                                        <span>{order.phone}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <MapPin size={14} />
-                                        <span>
-                                            {order.street}, {order.city}, {order.country}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Total */}
-                                <div className="mt-4 text-right">
-                                    <span className="font-semibold text-gray-800">
-                                        Total:{" "}
-                                        <span className="text-yellow-600">
-                                            Rs {order.totalPrice?.toLocaleString()}
-                                        </span>
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6">
+        <p className="text-red-500 font-semibold mb-4">{error}</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <Package className="w-8 h-8 text-gray-400" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-1">No Orders Yet</h2>
+        <p className="text-sm text-gray-500 mb-6">Place your first order to see it here.</p>
+        <Link to="/products/all">
+          <Button variant="primary" icon={<ShoppingBag className="w-4 h-4" />}>
+            Start Shopping
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex flex-col md:flex-row gap-8">
+          <AccountSidebar />
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <div
+              key={order._id}
+              className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <Badge variant={statusVariant[order.status] || "primary"}>
+                  {order.status}
+                </Badge>
+                <span className="flex items-center gap-1 text-xs text-gray-400">
+                  <Clock className="w-3 h-3" />
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+
+              {order.items?.map((item, i) => (
+                <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-white border border-gray-100 flex-shrink-0">
+                    <img
+                      src={item.product?.images?.[0]?.url || ""}
+                      alt={item.product?.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.target.style.display = "none"; }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {item.product?.title || "Product"}
+                    </p>
+                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Rs. {((item.product?.price || 0) * item.quantity).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+
+              <div className="flex items-center justify-between pt-3 mt-1 border-t border-gray-100">
+                <div className="flex items-center gap-3 text-xs text-gray-400">
+                  <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {order.phone}</span>
+                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {order.city}</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Total</p>
+                  <p className="text-lg font-bold text-gray-900">Rs. {order.totalPrice?.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  );
 };
 
 export default MyOrders;

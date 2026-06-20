@@ -2,16 +2,9 @@ import { ApiError } from "../utils/Api_Error.js";
 
 const validate = (schema) => (req, res, next) => {
     try {
-        const validData = schema.parse({
-            body: req.body,
-            query: req.query,
-            params: req.params,
-        });
+        const parsed = schema.parse({ body: req.body, query: { ...req.query } });
 
-        // Replace req objects with validated and stripped data
-        req.body = validData.body;
-        req.query = validData.query;
-        req.params = validData.params;
+        if (parsed.body) req.body = parsed.body;
 
         next();
     } catch (error) {

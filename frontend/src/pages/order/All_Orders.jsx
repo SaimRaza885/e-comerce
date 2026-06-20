@@ -1,202 +1,173 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import OrderCard from "../../components/OrderStatusCard";
-import BackArrow from "../../components/BackArrow";
 import { saveAs } from "file-saver";
-import { Calendar, Download, RefreshCw } from "lucide-react";
+import { Calendar, Download, RefreshCw, Search, Trash2, Eye } from "lucide-react";
+import { Button, Spinner } from "../../components/ui";
+
+const statusVariant = {
+  pending: "bg-amber-50 text-amber-700 border-amber-200",
+  shipped: "bg-blue-50 text-blue-700 border-blue-200",
+  delivered: "bg-green-50 text-green-700 border-green-200",
+  canceled: "bg-red-50 text-red-700 border-red-200",
+};
 
 const OrdersList = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({
-    search: "",
-    sort: "newest",
-    startDate: "",
-    endDate: "",
-  });
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState({ search: "", sort: "newest", startDate: "", endDate: "" });
   const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await api.get("order/all");
-        setOrders(res.data.data || []);
-        setLastUpdated(new Date());
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
   }, []);
 
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.get("order/all");
+      setOrders(Array.isArray(res.data.data) ? res.data.data : []);
+      setLastUpdated(new Date());
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async (id) => {
+    if (!window.confirm("Delete this order?")) return;
     try {
       await api.delete(`order/delete/${id}`);
-      setOrders((prev) => prev.filter((order) => order._id !== id));
-      alert("Order deleted successfully");
-    } catch (error) {
-      console.error("Error deleting order:", error);
-      alert("Failed to delete order");
+      setOrders((prev) => prev.filter((o) => o._id !== id));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete order");
     }
   };
 
   const filteredOrders = orders
-    .filter((order) => {
-      const searchLower = filter.search.toLowerCase();
-      const date = new Date(order.createdAt);
-
-      const matchSearch =
-        order.phone?.toString().toLowerCase().includes(searchLower) ||
-        order.city?.toLowerCase().includes(searchLower) ||
-        order.country?.toLowerCase().includes(searchLower);
-
-      const inDateRange =
-        (!filter.startDate || date >= new Date(filter.startDate)) &&
-        (!filter.endDate || date <= new Date(filter.endDate));
-
-      return matchSearch && inDateRange;
+    .filter((o) => {
+      const q = filter.search.toLowerCase();
+      const match = o.phone?.toLowerCase().includes(q) || o.city?.toLowerCase().includes(q) || o.country?.toLowerCase().includes(q);
+      const inRange = (!filter.startDate || new Date(o.createdAt) >= new Date(filter.startDate)) &&
+        (!filter.endDate || new Date(o.createdAt) <= new Date(filter.endDate));
+      return match && inRange;
     })
     .sort((a, b) => {
-      const dateA = new Date(a.createdAt);
-      const dateB = new Date(b.createdAt);
-
+      const d = (k) => new Date(k.createdAt);
       switch (filter.sort) {
-        case "newest":
-          return dateB - dateA;
-        case "oldest":
-          return dateA - dateB;
-        case "price-high":
-          return b.totalPrice - a.totalPrice;
-        case "price-low":
-          return a.totalPrice - b.totalPrice;
-        default:
-          return 0;
+        case "newest": return d(b) - d(a);
+        case "oldest": return d(a) - d(b);
+        case "price-high": return (b.totalPrice || 0) - (a.totalPrice || 0);
+        case "price-low": return (a.totalPrice || 0) - (b.totalPrice || 0);
+        default: return 0;
       }
     });
 
   const downloadCSV = () => {
-    if (filteredOrders.length === 0)
-      return alert("No filtered orders to download.");
-
-    const csvRows = [
-      ["ID", "Name", "Phone", "Country", "City", "Street", "Total Price", "Date"],
-      ...filteredOrders.map((o) => [
-        o._id,
-        o.Name,
-        o.phone,
-        o.country,
-        o.city,
-        o.street,
-        o.totalPrice,
-        new Date(o.createdAt).toLocaleString(),
-      ]),
-    ];
-
-    const csvString = csvRows.map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8" });
-    saveAs(blob, "filtered_orders.csv");
+    if (!filteredOrders.length) return alert("No orders to download.");
+    const rows = [["ID", "Name", "Phone", "Country", "City", "Street", "Total", "Date"],
+      ...filteredOrders.map((o) => [o._id, o.Name, o.phone, o.country, o.city, o.street, o.totalPrice, new Date(o.createdAt).toLocaleString()])];
+    const blob = new Blob([rows.map((r) => r.join(",")).join("\n")], { type: "text/csv;charset=utf-8" });
+    saveAs(blob, "orders.csv");
   };
 
   if (loading) {
+    return <div className="min-h-[60vh] flex items-center justify-center"><Spinner size="lg" /></div>;
+  }
+
+  if (error) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="loader"></div>
-        <style jsx>{`
-          .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6">
+        <RefreshCw className="w-12 h-12 text-red-300 mb-4" />
+        <p className="text-red-500 font-semibold mb-4">{error}</p>
+        <Button variant="outline" onClick={fetchOrders}>Try Again</Button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-20">
-      <BackArrow navigateto={-1} />
-
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">All Orders</h2>
-        <div className="text-sm text-gray-600 flex items-center gap-2">
-          <Calendar size={16} />
-          <span>Last Updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "Fetching..."}</span>
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">All Orders</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {filteredOrders.length} of {orders.length} orders
+              {lastUpdated && <> &middot; Last updated {lastUpdated.toLocaleTimeString()}</>}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={downloadCSV} icon={<Download className="w-4 h-4" />}>CSV</Button>
+            <Button variant="primary" onClick={fetchOrders} icon={<RefreshCw className="w-4 h-4" />}>Refresh</Button>
+          </div>
         </div>
-      </div>
 
-      {/* Filter Bar */}
-      <div className=" bg-white z-10 border-b border-gray-200 py-4 mb-6 flex flex-wrap items-center justify-between gap-4">
-        <input
-          type="text"
-          placeholder="Search by phone, city, or country..."
-          value={filter.search}
-          onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-          className="w-full md:w-1/3 px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-        />
-
-        <div className="flex flex-wrap gap-3 items-center">
-          <select
-            value={filter.sort}
-            onChange={(e) => setFilter({ ...filter, sort: e.target.value })}
-            className="px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-          >
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="price-high">Price High → Low</option>
-            <option value="price-low">Price Low → High</option>
-          </select>
-
-          <button
-            onClick={downloadCSV}
-            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-all"
-          >
-            <Download size={16} /> Download CSV
-          </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md transition-all"
-          >
-            <RefreshCw size={16} /> Refresh
-          </button>
-        </div>
-      </div>
-
-      {/* Summary */}
-      <p className="text-gray-700 text-sm mb-4">
-        Showing <strong>{filteredOrders.length}</strong> of <strong>{orders.length}</strong> orders.
-      </p>
-
-      {/* Orders Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-[100vh] pr-2">
-        {filteredOrders.length > 0 ? (
-          filteredOrders.map((order, index) => (
-            <div key={order._id} className="animate-fadeIn" style={{ animationDelay: `${index * 0.05}s` }}>
-              <OrderCard order={order} onDelete={() => handleDelete(order._id)} />
+        {/* Filters */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by phone, city, or country..."
+                value={filter.search}
+                onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
             </div>
-          ))
+            <select
+              value={filter.sort}
+              onChange={(e) => setFilter({ ...filter, sort: e.target.value })}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="price-high">Price High-Low</option>
+              <option value="price-low">Price Low-High</option>
+            </select>
+            <input type="date" value={filter.startDate} onChange={(e) => setFilter({ ...filter, startDate: e.target.value })}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+            <input type="date" value={filter.endDate} onChange={(e) => setFilter({ ...filter, endDate: e.target.value })}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+          </div>
+        </div>
+
+        {/* Orders Grid */}
+        {filteredOrders.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredOrders.map((order) => (
+              <div key={order._id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusVariant[order.status] || "bg-gray-50 text-gray-700 border-gray-200"}`}>
+                    {order.status}
+                  </span>
+                  <span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="space-y-1.5 mb-4 text-sm">
+                  <p className="font-semibold text-gray-900">{order.Name || "N/A"}</p>
+                  <p className="text-gray-500">{order.phone}</p>
+                  <p className="text-gray-500">{order.city}, {order.country}</p>
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                  <span className="text-lg font-bold text-primary">Rs. {(order.totalPrice || 0).toLocaleString()}</span>
+                  <button onClick={() => handleDelete(order._id)} className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
-          <p className="text-gray-500">No orders match your filters.</p>
+          <div className="text-center py-16">
+            <Eye className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 font-medium">No orders match your filters.</p>
+          </div>
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn { animation: fadeIn 0.4s ease forwards; }
-      `}</style>
     </div>
   );
 };

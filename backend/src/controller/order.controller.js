@@ -29,8 +29,8 @@ export const createOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2️⃣ Create Order
-  const order = await Order.create({
+  // 2️⃣ Create Order (attach user if authenticated)
+  const orderData = {
     Name,
     phone,
     country,
@@ -38,25 +38,50 @@ export const createOrder = asyncHandler(async (req, res) => {
     street,
     items: orderItems,
     totalPrice,
-  });
+  };
+  if (req.user?._id) {
+    orderData.user = req.user._id;
+  }
+  const order = await Order.create(orderData);
 
-  // 3️⃣ Reduce Stock
-  for (const item of items) {
-    await Product.findByIdAndUpdate(item.product, {
-      $inc: { stock: -item.quantity },
-    });
-
-    // Update inStock status if stock becomes 0
-    const updatedProduct = await Product.findById(item.product);
-    if (updatedProduct.stock === 0) {
-      updatedProduct.inStock = false;
-      await updatedProduct.save();
+  // 3️⃣ Reduce Stock (atomic with rollback on failure)
+  const decremented = [];
+  try {
+    for (const item of items) {
+      const updated = await Product.findOneAndUpdate(
+        { _id: item.product, stock: { $gte: item.quantity } },
+        { $inc: { stock: -item.quantity } },
+        { new: true }
+      );
+      if (!updated) throw new Error(item.product);
+      if (updated.stock === 0) {
+        updated.inStock = false;
+        await updated.save();
+      }
+      decremented.push(item);
     }
+  } catch (err) {
+    for (const d of decremented) {
+      await Product.findByIdAndUpdate(d.product, { $inc: { stock: d.quantity } });
+    }
+    await Order.findByIdAndDelete(order._id);
+    throw new ApiError(400, `Some items are no longer available in the requested quantity`);
   }
 
   return res
     .status(201)
     .json(new ApiResponse(201, order, "Order created successfully"));
+});
+
+// 🟢 Get Current User's Orders
+export const getMyOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({ user: req.user._id })
+    .populate("items.product", "title price images")
+    .sort({ createdAt: -1 });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, orders, "Your orders fetched successfully"));
 });
 
 // 🟡 Get All Orders
@@ -88,6 +113,15 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 
   if (!order) throw new ApiError(404, "Order not found");
 
+  if (status === "canceled") {
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity },
+        $set: { inStock: true },
+      });
+    }
+  }
+
   return res
     .status(200)
     .json(new ApiResponse(200, order, "Order status updated successfully"));
@@ -99,6 +133,13 @@ export const Delete_Order = asyncHandler(async (req, res) => {
 
   const order = await Order.findByIdAndDelete(id);
   if (!order) throw new ApiError(404, "Order not found");
+
+  for (const item of order.items) {
+    await Product.findByIdAndUpdate(item.product, {
+      $inc: { stock: item.quantity },
+      $set: { inStock: true },
+    });
+  }
 
   return res
     .status(200)

@@ -36,65 +36,26 @@ const App = () => {
           <Route path="/product/:id" element={<Layout><ProductDetails /></Layout>} />
           <Route path="/products/all" element={<Layout><Shop /></Layout>} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin/login" element={<Login />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/search" element={<Layout><SearchPage /></Layout>} />
 
           {/* user routes */}
-          <Route path="/logout" element={
-
-            <Logout />
-
-          } />
-          <Route path="account/profile" element={
-
-            <UserProfile />
-
-          } />
-          <Route path="account/change-password" element={
-
-            <ChangePassword />
-
-          } />
-          <Route path="/checkout" element={
-
-            <Create_order cartItems={cartItems} />
-
-          } />
-          <Route path="/dashboard" element={
-
-            <Dashboard />
-
-          } />
-          <Route path="/my-orders" element={
-
-            <OrdersPage />
-
-          } />
-          <Route path="/cart" element={
-
-            <Cart />
-
-          } />
+          <Route path="/logout" element={<Logout />} />
+          <Route path="/account/profile" element={<Layout><UserProfile /></Layout>} />
+          <Route path="/account/change-password" element={<Layout><ChangePassword /></Layout>} />
+          <Route path="/checkout" element={<Layout><Create_order cartItems={cartItems} /></Layout>} />
+          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+          <Route path="/my-orders" element={<Layout><OrdersPage /></Layout>} />
+          <Route path="/cart" element={<Layout><Cart /></Layout>} />
 
           {/* admin routes */}
-          <Route path="product/create" element={
-            <CreateProduct />
+          <Route path="product/create" element={<Layout><CreateProduct /></Layout>} />
+          <Route path="product/update/:id" element={<Layout><UpdateProduct /></Layout>} />
+          <Route path="admin/dashboard" element={<Layout><AdminDashboard /></Layout>} />
+          <Route path="admin/dashboard/orders" element={<Layout><AllOrders /></Layout>} />
 
-          } />
-          <Route path="product/update/:id" element={
-            <UpdateProduct />
-
-          } />
-          <Route path="admin/dashboard" element={
-            <AdminDashboard />
-
-          } />
-          
-          <Route path="admin/dashboard/orders" element={
-            <AllOrders />
-
-          } />
+          {/* 404 catch-all — must be LAST */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

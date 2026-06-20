@@ -1,123 +1,136 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiMail, FiUser, FiCheckCircle, FiLock, FiEdit } from "react-icons/fi";
-import Navbar from "../components/Navbar";
+import { Mail, User, Shield, Calendar, Edit3, Lock, LayoutDashboard, RefreshCw, UserCircle } from "lucide-react";
 import api from "../api/axios";
 import UpdateFullName from "./Update_FullName";
+import { Button, Spinner } from "../components/ui";
+import AccountSidebar from "../components/AccountSidebar";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
+      setError("");
       try {
-        const res = await api.get("/user/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        });
+        const res = await api.get("/user/me");
         setUser(res.data.data);
       } catch (err) {
-        console.error("Failed to fetch profile:", err.response?.data || err.message);
+        setError(err.response?.data?.message || "Failed to fetch profile");
       } finally {
-        setLoading(false); // ✅ Now only runs after fetch completes
+        setLoading(false);
       }
     };
-
     fetchProfile();
   }, [isModalOpen]);
 
-
-  if (!user) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        {loading ? (
-          <p className="text-gray-500 text-xl">Loading...</p>
-        ) : (
-          <p className="text-red-500 text-lg">
-            Not logged in. Please{" "}
-            <Link to="/login" className="text-blue-500 underline">
-              login
-            </Link>{" "}
-            to continue.
-          </p>
-        )}
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Spinner size="lg" />
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6">
+        <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+          <RefreshCw className="w-7 h-7 text-red-400" />
+        </div>
+        <p className="text-red-500 font-semibold mb-4">{error}</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    );
+  }
 
+  if (!user) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6">
+        <UserCircle className="w-16 h-16 text-gray-300 mb-4" />
+        <p className="text-gray-500 mb-4">Not logged in.</p>
+        <Link to="/login"><Button variant="primary">Login</Button></Link>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-gray-100">
-        {/* Header Section */}
-        
-        <div className="profile_gradient">
-          <div className="absolute -bottom-16">
-            <div className="profile_avatar">
-              {user.fullName.charAt(0).toUpperCase()}
+    <div className="min-h-screen bg-gray-50 pb-12">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          <AccountSidebar />
+
+          {/* Main */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h1>
+
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          {/* Avatar Banner */}
+          <div className="bg-gradient-to-r from-primary to-secondary px-6 py-10">
+            <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/50 mx-auto">
+              <span className="text-3xl font-bold text-white">{user.fullName.charAt(0).toUpperCase()}</span>
             </div>
           </div>
-        </div>
 
-        {/* Profile Card */}
-        <div className="max-w-4xl mx-auto mt-20 px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-3xl shadow-xl p-8">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              {/* User Info */}
-              <div className="flex-1 text-center sm:text-left">
-                <h1 className="text-3xl font-bold text-gray-800">{user.fullName}</h1>
-                <p className="profile_mini_info">
-                  <FiUser /> Role: {user.role}
-                </p>
-                <p className="profile_mini_info">
-                  <FiMail /> Email: {user.email}
-                </p>
-                <p className="profile_mini_info">
-                  <FiCheckCircle className="text-green-500" /> Status: Active
-                </p>
+          <div className="p-6">
+            {/* User Info */}
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900">{user.fullName}</h2>
+              {user.urdu_name && (
+                <p className="text-sm text-gray-500">{user.urdu_name}</p>
+              )}
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <Mail className="w-4 h-4 text-secondary" />
+                <span className="text-sm text-gray-600">{user.email}</span>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-4 mt-4 sm:mt-0">
-
-                <button onClick={() => setModalOpen(true)} className="profile_btn profile_btn_blue">
-                  <FiEdit /> Change Name
-                </button>
-                <UpdateFullName
-                  id={user._id} // Replace with real user ID
-                  isOpen={isModalOpen}
-                  onClose={() => setModalOpen(false)}
-                />
-                <Link to="/account/change-password">
-                  <button className="profile_btn profile_btn-yellow">
-                    <FiLock /> Change Password
-                  </button>
-                </Link>
-                <Link to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}>
-                  <button className="profile_btn profile_btn-red">
-                    <FiUser /> Dashboard
-                  </button>
-                </Link>
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <Shield className="w-4 h-4 text-secondary" />
+                <span className="text-sm text-gray-600 capitalize">Role: {user.role}</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <Calendar className="w-4 h-4 text-secondary" />
+                <span className="text-sm text-gray-600">Joined {new Date(user.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
 
-            {/* Extra Info Section */}
-            <div className="mt-10 grid grid-cols-1 gap-6">
-              <div className="bg-blue-50 p-4 rounded-xl flex flex-col items-center justify-center">
-                <p className="text-gray-500 text-sm">Joined On</p>
-                <p className="font-semibold text-gray-800">{new Date(user.createdAt).toLocaleDateString()}</p>
-              </div>
-
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setModalOpen(true)}
+                icon={<Edit3 className="w-4 h-4" />}
+              >
+                Change Name
+              </Button>
+              <UpdateFullName
+                id={user._id}
+                isOpen={isModalOpen}
+                onClose={() => setModalOpen(false)}
+              />
+              <Link to="/account/change-password" className="flex-1">
+                <Button variant="outline" className="w-full" icon={<Lock className="w-4 h-4" />}>
+                  Change Password
+                </Button>
+              </Link>
+              <Link to={user.role === "admin" ? "/admin/dashboard" : "/dashboard"} className="flex-1">
+                <Button variant="primary" className="w-full" icon={<LayoutDashboard className="w-4 h-4" />}>
+                  Dashboard
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
+  </div>
+</div>
   );
 }

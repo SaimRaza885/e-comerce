@@ -1,110 +1,110 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios"; // axios instance
-import { useNavigate, Link, data } from "react-router-dom";
-import Logo from "../components/Logo";
-import BackArrow from "../components/BackArrow";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, LogIn } from "lucide-react";
+import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import { Eye, EyeOff } from "lucide-react";
+import { Button, Input } from "../components/ui";
+import Logo from "../components/Logo";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
   const { login } = useAuth();
-  const [statusCode, setStatusCode] = useState(null);
   const navigate = useNavigate();
 
-
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage(null);
+    setError("");
 
     try {
-      const res = await api.post("/user/login", form, {
-        withCredentials: true, // send cookies
-      });
-
-      const token = res.data.data.accessToken;
-      const loginDate = new Date();
-      login(res.data.data.user, token, loginDate);
-      setMessage(res.data.message || "Login successful!");
-      setStatusCode(res.data.statusCode)
-
-      // Redirect after login
-      navigate("/account/profile");
+      const res = await api.post("/user/login", form, { withCredentials: true });
+      const { accessToken: token, userData } = res.data.data;
+      login(userData, token, new Date());
+      navigate(userData.role === "admin" ? "/admin/dashboard" : "/account/profile");
     } catch (err) {
-      setMessage(err.message);
-      setStatusCode(err.statusCode || 400);
+      setError(err.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <BackArrow />
-      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6">
-        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
-          Login
-        </h2>
+    <div className="min-h-screen bg-gradient-to-br from-cream to-white flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <Logo scrolled={true} />
+          </div>
+          <h1 className="text-3xl font-black text-primary">Welcome Back</h1>
+          <p className="text-secondary mt-1">Sign in to your account</p>
+        </div>
 
-        {message && (
-          <div className={`mb-4 text-sm text-center ${statusCode > 205 ? "text-red-600" : "text-green-600"} `}>{message}</div>
-        )}
+        <div className="bg-white rounded-[2rem] shadow-2xl border border-gray-100 p-8">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium text-center">
+              {error}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Email"
-            className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
-            required
-          />
-          <div className="relative w-full">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              value={form.password}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Input
+              label="Email"
+              type="email"
+              name="email"
+              value={form.email}
               onChange={handleChange}
-              placeholder="Password"
-              className="w-full p-3 pr-10 border rounded-lg focus:ring focus:ring-blue-300"
+              placeholder="your@email.com"
               required
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+
+            <div className="relative">
+              <Input
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-[38px] text-gray-400 hover:text-primary transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            <Button
+              type="submit"
+              loading={loading}
+              icon={<LogIn className="w-4 h-4" />}
+              className="w-full"
+              size="lg"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-500">
+              Don't have an account?{" "}
+              <Link to="/register" className="text-accent font-bold hover:underline">
+                Create one
+              </Link>
+            </p>
           </div>
-
-
-          <p className="mt-4 text-center text-sm text-gray-600">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-blue-600 hover:underline">
-              Sign Up
-            </Link>
-          </p>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
+        </div>
       </div>
-    </div >
+    </div>
   );
 }

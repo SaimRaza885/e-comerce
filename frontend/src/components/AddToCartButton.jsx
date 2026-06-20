@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FiShoppingCart, FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
+import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { useCart } from "../context/Cart";
 
 const AddToCartButton = ({ product }) => {
@@ -7,7 +7,6 @@ const AddToCartButton = ({ product }) => {
   const [inCart, setInCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  // Check if item already in cart
   useEffect(() => {
     const existing = cartItems.find((item) => item._id === product._id);
     if (existing) {
@@ -25,7 +24,8 @@ const AddToCartButton = ({ product }) => {
   };
 
   const handleIncrease = () => {
-    const newQty = quantity + 1;
+    const maxStock = product.stock ?? Infinity;
+    const newQty = Math.min(quantity + 1, maxStock);
     setQuantity(newQty);
     updateQuantity(product._id, newQty);
   };
@@ -42,33 +42,36 @@ const AddToCartButton = ({ product }) => {
     }
   };
 
+  if (!product.inStock && product.stock === 0) {
+    return (
+      <span className="text-xs font-medium text-red-500">Unavailable</span>
+    );
+  }
+
   return (
     <div className="flex items-center">
       {!inCart ? (
         <button
           onClick={handleAddToCart}
-          className="btn-premium py-2 px-6 text-sm shadow-lg hover:shadow-primary/20"
+          className="flex-1 py-2.5 px-6 rounded-full bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all active:scale-95 flex items-center justify-center gap-2"
         >
-          <FiShoppingCart className="mr-2" /> Add
+          <ShoppingCart className="w-4 h-4" /> Add
         </button>
       ) : (
-        <div className="flex items-center gap-2 bg-cream border border-primary/20 p-1 rounded-full shadow-inner">
+        <div className="flex items-center gap-2 bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
           <button
             onClick={handleDecrease}
-            className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-primary rounded-full hover:bg-gray-50 transition"
+            className="w-8 h-8 flex items-center justify-center bg-gray-50 text-primary rounded-lg hover:bg-gray-100 transition"
           >
-            {quantity > 1 ? <FiMinus size={14} /> : <FiTrash2 size={14} className="text-red-500" />}
+            {quantity > 1 ? <Minus className="w-3 h-3" /> : <Trash2 className="w-3 h-3 text-red-500" />}
           </button>
-
-          <span className="font-bold text-sm min-w-[24px] text-center text-primary">
-            {quantity}
-          </span>
-
+          <span className="font-bold text-sm min-w-[20px] text-center text-primary">{quantity}</span>
           <button
             onClick={handleIncrease}
-            className="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-full hover:bg-opacity-90 transition"
+            disabled={quantity >= (product.stock ?? Infinity)}
+            className="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-lg hover:bg-primary/90 transition disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <FiPlus size={14} />
+            <Plus className="w-3 h-3" />
           </button>
         </div>
       )}
