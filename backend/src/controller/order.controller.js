@@ -5,7 +5,7 @@ import { ApiError } from "../utils/Api_Error.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// 🟢 Create Order
+// Create Order
 export const createOrder = asyncHandler(async (req, res) => {
   if (req.user?.role === "admin") {
     throw new ApiError(403, "Admins cannot place orders");
@@ -29,7 +29,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   let totalPrice = 0;
   const orderItems = [];
 
-  // 1️⃣ Validate products and calculate total price
+  //  Validate products and calculate total price
   for (const item of items) {
     const product = await Product.findById(item.product);
     if (!product) {
@@ -47,7 +47,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2️⃣ Create Order (attach user if authenticated)
+  //  Create Order (attach user if authenticated)
   const orderData = {
     Name,
     phone,
@@ -62,7 +62,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   }
   const order = await Order.create(orderData);
 
-  // 3️⃣ Reduce Stock (atomic with rollback on failure)
+  // Reduce Stock (atomic with rollback on failure)
   const decremented = [];
   try {
     for (const item of items) {
@@ -97,7 +97,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, order, "Order created successfully"));
 });
 
-// 🟢 Get Current User's Orders
+//  Get Current User's Orders
 export const getMyOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id })
     .populate("items.product", "title price images")
@@ -108,7 +108,7 @@ export const getMyOrders = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, orders, "Your orders fetched successfully"));
 });
 
-// 🟡 Get All Orders
+//  Get All Orders
 export const getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find()
     .populate("items.product", "title price images")
@@ -119,7 +119,7 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, orders, "All orders fetched successfully"));
 });
 
-// 🔵 Update Order Status
+//  Update Order Status
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -159,7 +159,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, order, "Order status updated successfully"));
 });
 
-// 🔴 Delete/Cancel Order
+//  Delete/Cancel Order
 export const Delete_Order = asyncHandler(async (req, res) => {
   const { id } = req.params;
 

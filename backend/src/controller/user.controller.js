@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../model/user.model.js";
 import { Cloudinary_File_Upload, deleteOnCloudinary } from "../utils/upload_On_Cloudinary.js";
 
-// 🔑 Generate Tokens
+//  Generate Tokens
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -75,7 +75,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   );
 });
 
-// 🟢  ===================================  Login user  =================================== 
+//   ===================================  Login user  =================================== 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -96,7 +96,7 @@ export const login = asyncHandler(async (req, res) => {
     role: user.role,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-    avatar: user.avatar,
+    // avatar: user.avatar,
   };
 
   const options = {
@@ -112,7 +112,7 @@ export const login = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, { userData, accessToken }, "User logged in successfully"));
 });
 
-// 🔴 Logout user
+//  Logout user
 export const logout = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user?._id,

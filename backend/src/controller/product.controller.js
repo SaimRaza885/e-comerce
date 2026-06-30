@@ -7,7 +7,7 @@ import slugify from "slugify";
 
 const parseBool = (v) => v === true || v === "true" || v === "on" || v === "1";
 
-// 🟢 Create Product
+//  Create Product
 export const createProduct = asyncHandler(async (req, res) => {
   const { title, urdu_name, description, price, inStock, stock } = req.body;
 
@@ -55,7 +55,7 @@ export const getAllProducts = asyncHandler(async (req, res) => {
 
   const queryObj = {};
 
-  // 1️⃣ Filtering (with ReDoS protection — escape regex special chars)
+  //  Filtering (with ReDoS protection — escape regex special chars)
   if (search) {
     const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     queryObj.$or = [
@@ -74,14 +74,14 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     queryObj.inStock = parseBool(inStock);
   }
 
-  // 2️⃣ Sorting
+  //  Sorting
   let sortBy = { createdAt: -1 };
   if (sort) {
     const [field, order] = sort.split(":");
     sortBy = { [field]: order === "desc" ? -1 : 1 };
   }
 
-  // 3️⃣ Pagination
+  //  Pagination
   const pageNum = Math.max(1, parseInt(page) || 1);
   const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 10));
   const skip = (pageNum - 1) * limitNum;
@@ -106,7 +106,7 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     }, "Products fetched successfully"));
 });
 
-// 🔵 Get Single Product
+//  Get Single Product
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -118,7 +118,7 @@ export const getProductById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, product, "Product fetched successfully"));
 });
 
-// 🟡 Update Product
+//  Update Product
 export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { title, urdu_name, description, price, inStock, stock } = req.body;
@@ -147,7 +147,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, product, "Product updated successfully"));
 });
 
-// 🔴 Delete Product
+//  Delete Product
 export const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -166,7 +166,7 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Product and its images deleted successfully"));
 });
 
-// 🖼️ Update Product Images
+//  Update Product Images
 export const updateProductImages = asyncHandler(async (req, res) => {
   const { id } = req.params;
 

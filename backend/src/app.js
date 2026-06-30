@@ -3,15 +3,11 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import morgan from "morgan";
-import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
-import hpp from "hpp";
 import { limiter } from "./middleware/rateLimiter.middleware.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
 
-// 🛡️ Security Middleware
 app.use(helmet()); // Set security HTTP headers
 app.use(morgan("dev")); // HTTP request logger
 app.use(limiter); // Rate limiting
@@ -30,10 +26,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.json({ limit: "16kb" }));
 
-// Disabled for Express 5 compatibility (read-only req.query)
-// app.use(mongoSanitize());
-// app.use(xss());
-// app.use(hpp());
+
 
 // Routes import
 import userRoutes from "./route/user.route.js";
